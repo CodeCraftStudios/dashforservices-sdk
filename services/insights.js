@@ -16,11 +16,21 @@
  *   is on, nothing is stored and nothing is sent. `respectDNT: false` to opt out.
  * - Fire-and-forget: every failure is silent. Analytics never breaks a site.
  *
- * Backend: EXISTS today. POST /api/site/insights (module "websites") accepts
- * {visitor_id, session_id, attribution, device, events:[{type, name, path,
- * url, referrer, title, ts, el, props}]} with type pageview|click|
- * session_start|custom. Named-event reporting (CTA click leaderboards,
- * conversion funnels) in the dashboard is NEW (ServiceDash "analytics").
+ * Backend contract (Dash4Devs platforms/insights_views.py, module "websites"):
+ *   POST /api/site/insights?k=<site key>   body is JSON, any Content-Type
+ *   {
+ *     visitor_id, session_id,
+ *     attribution: { ft: {source, medium, campaign, term, content, referrer, landing, at},
+ *                    lt: {source, medium, campaign} },
+ *     device: { type, browser, os, screen },
+ *     events: [ { type: "pageview"|"click"|"session_start"|"custom", name, path,
+ *                 referrer, title, ts (epoch ms), session_id,
+ *                 el: {tag, text, href, id, outbound}, props: {...} } ]   // max 100
+ *   }
+ * The key rides in ?k= and the body is sent as text/plain, so neither fetch
+ * nor sendBeacon needs a CORS preflight. A `session_start` event is what the
+ * platform counts as a new session for the visitor. Reports read back through
+ * GET /api/platform/sites/<website id>/insights?days=N (platform key).
  */
 
 import { createStorage, doNotTrack, hasWindow, randomId } from "./_util.js";
@@ -29,6 +39,11 @@ const VISITOR_KEY = "sd_vid";
 const SESSION_KEY = "sd_ses";
 const SESSION_IDLE_MS = 30 * 60 * 1000;
 const MAX_QUEUE = 20;
+/** The platform drops anything past 100 events in one batch. */
+const MAX_BATCH = 100;
+/** Bounded so an offline tab can't grow the queue forever. */
+const MAX_PENDING = 200;
+const ATTR_FIELDS = ["source", "medium", "campaign", "term", "content", "referrer"];
 
 export class InsightsModule {
   /**
@@ -105,7 +120,6 @@ export class InsightsModule {
     if (!this.enabled) return;
     this._enqueue("pageview", {
       path: path || this._path(),
-      url: window.location.href,
       referrer: document.referrer || "",
       title: document.title || "",
     });
@@ -135,9 +149,9 @@ export class InsightsModule {
       }
     }
     this._enqueue("click", {
-      name: String(name || label || href || "click"),
+      name: String(name || label || href || "click").slice(0, 200),
       path: this._path(),
-      el: { tag: props.tag || "", text: String(label).slice(0, 200), href: String(href), id, outbound },
+      el: { tag: String(props.tag || ""), text: String(label).slice(0, 300), href: String(href).slice(0, 600), id: String(id), outbound },
       props: { label, href, ...props },
     });
     // Outbound links and tel:/mailto: often leave the page at once.
@@ -179,40 +193,52 @@ export class InsightsModule {
    * otherwise. Re-queues on network failure.
    */
   flush(useBeacon = false) {
-    if (!hasWindow() || this._queue.length === 0) return;
-    const events = this._queue.splice(0, this._queue.length);
+    if (!hasWindow() || this._queue.length === 0 || !this.client?.key) return;
+    while (this._queue.length) {
+      const events = this._queue.splice(0, MAX_BATCH);
+      this._send(events, useBeacon);
+    }
+  }
+
+  _send(events, useBeacon) {
     const envelope = {
-      visitor_id: this.getVisitorId(),
-      session_id: this.getSessionId(),
+      visitor_id: this._visitorId || this.getVisitorId(),
+      session_id: this._sessionId || "",
       attribution: this._attribution(),
       device: this._device(),
       events,
     };
     const url = `${this.client.baseURL}/api/site/insights?k=${encodeURIComponent(this.client.key)}`;
     const body = JSON.stringify(envelope);
+    // text/plain keeps both transports "simple" requests: no preflight, and
+    // sendBeacon never refuses the payload over its content type.
+    const type = "text/plain;charset=UTF-8";
     try {
-      if (useBeacon && navigator.sendBeacon) {
-        if (navigator.sendBeacon(url, new Blob([body], { type: "application/json" }))) return;
+      if (useBeacon && typeof navigator !== "undefined" && navigator.sendBeacon) {
+        if (navigator.sendBeacon(url, new Blob([body], { type }))) return;
       }
-      fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Site-Key": this.client.key },
-        body,
-        keepalive: true,
-      }).catch(() => this._requeue(events));
+      fetch(url, { method: "POST", headers: { "Content-Type": type }, body, keepalive: body.length < 60000, credentials: "omit" })
+        .then((res) => {
+          if (res.status === 429 || res.status >= 500) this._requeue(events);
+        })
+        .catch(() => this._requeue(events));
     } catch {
       this._requeue(events);
     }
   }
 
   _requeue(events) {
-    this._queue.unshift(...events.slice(-100));
+    this._queue.unshift(...events);
+    if (this._queue.length > MAX_PENDING) this._queue.splice(0, this._queue.length - MAX_PENDING);
   }
 
   _enqueue(type, fields) {
     this._boot();
-    this._touchSession();
+    // 30 idle minutes on an open tab roll the session; the platform only counts
+    // a new session when it sees session_start.
+    if (this._ensureSession()) this._queue.push({ type: "session_start", ts: Date.now(), session_id: this._sessionId });
     this._queue.push({ type, ts: Date.now(), session_id: this._sessionId, ...fields });
+    if (this._queue.length > MAX_PENDING) this._queue.splice(0, this._queue.length - MAX_PENDING);
     if (this._queue.length >= MAX_QUEUE) this.flush();
   }
 
@@ -286,18 +312,24 @@ export class InsightsModule {
     return isNew;
   }
 
-  _touchSession() {
-    if (!this._sessionId) return;
-    this._storage.setItem(SESSION_KEY, JSON.stringify({ id: this._sessionId, ts: Date.now() }));
-  }
-
   // ─── Env ────────────────────────────────────────────────────────────────
 
+  /** Map the attribution module's touches onto the platform's ft/lt keys. */
   _attribution() {
+    const pick = (t, full) => {
+      if (!t || typeof t !== "object") return {};
+      const out = {};
+      for (const k of full ? ATTR_FIELDS : ATTR_FIELDS.slice(0, 3)) if (t[k]) out[k] = String(t[k]);
+      if (full) {
+        if (t.landing_page || t.landing) out.landing = String(t.landing_page || t.landing);
+        if (t.at) out.at = t.at;
+      }
+      return out;
+    };
     try {
       const a = this.client.attribution?.get?.();
       if (!a) return { ft: {}, lt: {} };
-      return { ft: a.first_touch || {}, lt: a.last_touch || {} };
+      return { ft: pick(a.first_touch, true), lt: pick(a.last_touch, false) };
     } catch {
       return { ft: {}, lt: {} };
     }

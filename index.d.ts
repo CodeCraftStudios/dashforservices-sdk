@@ -851,17 +851,52 @@ export interface InsightsInitOptions {
   respectDNT?: boolean;
 }
 
+/** One event in a POST /api/site/insights batch (the platform ingest contract). */
+export interface InsightsEvent {
+  type: "pageview" | "click" | "session_start" | "custom";
+  /** Event name: "cta_click", "phone_click", "lead_submitted". Max 200 chars. */
+  name?: string;
+  /** Path (+query); the platform reports on the bare path. */
+  path?: string;
+  referrer?: string;
+  title?: string;
+  /** Epoch milliseconds on the client. */
+  ts: number;
+  session_id?: string;
+  /** Click target detail (click events). */
+  el?: { tag: string; text: string; href: string; id: string; outbound: boolean };
+  props?: Record<string, unknown>;
+}
+
+/** The batch envelope the collector sends. */
+export interface InsightsEnvelope {
+  visitor_id: string;
+  session_id: string;
+  attribution: {
+    /** First touch: immutable on the platform once set. */
+    ft: { source?: string; medium?: string; campaign?: string; term?: string; content?: string; referrer?: string; landing?: string; at?: string | number };
+    /** Last touch, snapshotted onto every event. */
+    lt: { source?: string; medium?: string; campaign?: string };
+  };
+  device: { type?: "desktop" | "mobile" | "tablet"; browser?: string; os?: string; screen?: string };
+  /** At most 100 per batch. */
+  events: InsightsEvent[];
+}
+
 export declare class InsightsModule {
   readonly enabled: boolean;
   init(options?: InsightsInitOptions): { active: boolean };
   destroy(): void;
   pageview(path?: string): void;
   track(name: string, props?: Record<string, unknown>): void;
-  trackClick(name: string, props?: { label?: string; href?: string; id?: string; [key: string]: unknown }): void;
+  /** A click: recorded as type "click" with el {tag, text: label, href, id, outbound}. tel:/mailto:/outbound links flush at once. */
+  trackClick(name: string, props?: { label?: string; href?: string; id?: string; tag?: string; [key: string]: unknown }): void;
+  /** A goal (lead sent, purchase): a "custom" event with props.conversion = true, flushed at once. */
   conversion(name?: string, props?: Record<string, unknown>): void;
   notifyRouteChange(path?: string): void;
   getVisitorId(): string;
   getSessionId(): string;
+  /** Send queued events now, in batches of up to 100. Beacon when useBeacon (page hide/unload). */
   flush(useBeacon?: boolean): void;
 }
 

@@ -290,7 +290,32 @@ the token in localStorage instead.
 | `leads` | `submit(data, {kind, smsConsent, consentTextVersion, consentText, emailConsent, honeypot})`, `requestQuote`, `requestWaterTest`, `requestCallback`, `contact`; constants `LEAD_KINDS`, `WATER_CONCERNS`, ... | `smsConsent` must be an explicit boolean; `consentTextVersion` is required when it is true. Homeowner fields (ownsHome, waterSource, householdSize, concerns, problems, timeline) or commercial fields (company, businessType, locations, unitsOrRooms, dailyUsageGallons). P |
 | `attribution` | `capture()`, `get()`, `snapshot()`, `affiliateCode`, `clear()`; `attributionFromCookies(header)` | First-party: localStorage + cookies `sd_attr` and `sd_ref` |
 | `affiliates` | `track(code)`, `recordClick(code)`, `get(code)` | `?ref=CODE` is tracked automatically on landing. P |
-| `insights` / `tracking` | `init({autoPageviews, autoClicks, respectDNT})`, `pageview()`, `track(name, props)`, `trackClick(name,{label,href})`, `conversion(name)`, `notifyRouteChange()`, `flush()`, `getVisitorId()`, `destroy()` | Batched, `sendBeacon` on hide/unload, visitor id `sd_vid`, respects DNT and GPC. `track("cta_click",{label,href})` is recorded as a click. `data-track="event"` on any element is captured automatically. P |
+| `insights` / `tracking` | `init({autoPageviews, autoClicks, respectDNT})`, `pageview()`, `track(name, props)`, `trackClick(name,{label,href,id,tag})`, `conversion(name, props)`, `notifyRouteChange()`, `flush()`, `getVisitorId()`, `getSessionId()`, `destroy()` | Batched (flush every 5 s, at 20 events, max 100 per request), `sendBeacon` on hide/unload, visitor id `sd_vid`, session `sd_ses` (30 idle minutes; a new session sends `session_start`), respects DNT and GPC. `track("cta_click",{label,href})` is recorded as a click. `data-track="event"` on any element is captured automatically. P |
+
+### Insights wire format
+
+What `insights` sends, exactly as the platform ingest (`platforms/insights_views.py`) reads it. The key rides in `?k=` and the body is JSON sent as `text/plain`, so neither `fetch` nor `sendBeacon` triggers a CORS preflight; a live public key must still match its allowed origins.
+
+```json
+{
+  "visitor_id": "v_…", "session_id": "s_…",
+  "attribution": {
+    "ft": { "source": "google", "medium": "cpc", "campaign": "…", "term": "…", "content": "…", "referrer": "…", "landing": "https://site/…?utm_…", "at": "2026-10-06T…Z" },
+    "lt": { "source": "google", "medium": "cpc", "campaign": "…" }
+  },
+  "device": { "type": "mobile", "browser": "Safari", "os": "iOS", "screen": "390x844" },
+  "events": [
+    { "type": "session_start", "ts": 1759770000000, "session_id": "s_…" },
+    { "type": "pageview", "ts": 1759770000001, "session_id": "s_…", "path": "/", "referrer": "", "title": "…" },
+    { "type": "click", "name": "phone_click", "ts": 1759770004000, "session_id": "s_…", "path": "/",
+      "el": { "tag": "a", "text": "Footer call", "href": "tel:+1…", "id": "", "outbound": false },
+      "props": { "label": "Footer call", "href": "tel:+1…" } },
+    { "type": "custom", "name": "lead_submitted", "ts": 1759770050000, "path": "/", "props": { "conversion": true } }
+  ]
+}
+```
+
+Bots are classified from the user agent and kept out of reports; the client IP is only stored hashed.
 
 ### React (`servicedash-sdk/react`)
 
@@ -371,7 +396,7 @@ last column).
 | `forms.get/submit` | `GET /api/site/forms/<key>`, `POST .../submissions` | **Exists** | `forms` |
 | `leads.*` | `POST /api/site/leads` | **Exists** (writes a `contact`). Routing into `install_lead` with call timer, consent and sequences is NEW | `contacts`, then `install_crm` |
 | `customers.subscribe` | `POST /api/site/customers` | **Exists** | `customers` |
-| `insights.*` | `POST /api/site/insights` (`?k=` for beacons) | **Exists** (pageview, click, session_start, custom). Named-event reports in the dashboard are NEW | `websites`, `analytics` |
+| `insights.*` | `POST /api/site/insights?k=<key>` (text/plain JSON, no preflight); reports: `GET /api/platform/sites/<website id>/insights?days=N` (platform key) | **Exists** (pageview, click, session_start, custom). The report returns totals, a timeseries, top pages, referrers and first-touch UTM; click, event, device and geo breakdowns are NEW | `websites` |
 | (not wrapped) | `/api/site/locations`, `/files`, `/cdn/*`, `/klaviyo`, giveaways | Exist; not used by ServiceDash sites yet | |
 | `pageGroup(slug).*`, `pageGroups.list` | `GET /api/site/page-groups`, `/<group>`, `/<group>/<item>` | NEW | `pages` |
 | `blog.*` | `GET /api/site/blog/posts`, `/posts/<slug>`, `/posts/<slug>/related`, `/blog/categories` | NEW | `blog` |

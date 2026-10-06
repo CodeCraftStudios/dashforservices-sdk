@@ -165,12 +165,14 @@ export function useCart({ autoSync } = {}) {
 export function TrackClick({ event = "cta_click", label, href, props, children }) {
   const client = useContext(ServiceDashContext);
 
-  const record = (childProps = {}) => {
+  const record = (childProps = {}, tag = "") => {
     try {
       const childText = typeof childProps.children === "string" ? childProps.children : "";
       client?.insights.trackClick(event, {
         label: label ?? (childProps["aria-label"] || childText),
         href: href ?? childProps.href ?? "",
+        id: childProps.id || "",
+        tag,
         ...(props || {}),
       });
     } catch {
@@ -183,7 +185,7 @@ export function TrackClick({ event = "cta_click", label, href, props, children }
     return cloneElement(only, {
       "data-sd-tracked": "",
       onClick: (e) => {
-        record(only.props);
+        record(only.props, typeof only.type === "string" ? only.type : "");
         if (typeof only.props.onClick === "function") only.props.onClick(e);
       },
     });
