@@ -44,9 +44,22 @@ const EMPTY_CART = Object.freeze({ id: null, lines: [], totals: null, warnings: 
  * @param {{client?: SiteClient, options?: object, captureAttribution?: boolean, children?: any}} props
  */
 export function ServiceDashProvider({ client, options, captureAttribution = true, children }) {
-  const value = useMemo(() => client || new SiteClient(options || {}), [client, options]);
+  // `client={null}`, or no key configured, mounts a no-op provider: <PageView/>
+  // and <TrackClick> do nothing, and the site still renders. useServiceDash()
+  // throws in that state, because there is genuinely no client to hand out.
+  const value = useMemo(() => {
+    if (client !== undefined) return client;
+    try {
+      return new SiteClient(options || {});
+    } catch (err) {
+      if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
+        console.warn(`[servicedash-sdk] No site client: ${err?.message || err}. Tracking is off.`);
+      }
+      return null;
+    }
+  }, [client, options]);
   useEffect(() => {
-    if (!captureAttribution) return;
+    if (!captureAttribution || !value) return;
     try {
       value.attribution.capture();
     } catch {
@@ -59,7 +72,7 @@ export function ServiceDashProvider({ client, options, captureAttribution = true
 /** The SiteClient from the nearest provider. */
 export function useServiceDash() {
   const client = useContext(ServiceDashContext);
-  if (!client) throw new Error("useServiceDash() must be used inside <ServiceDashProvider>");
+  if (!client) throw new Error("useServiceDash() needs a <ServiceDashProvider> with a configured site key.");
   return client;
 }
 

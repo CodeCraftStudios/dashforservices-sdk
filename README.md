@@ -56,6 +56,7 @@ never to a website.
 | `SERVICEDASH_SITE_KEY` | server only | Secret (or public) key for server components, route handlers, the CLI |
 | `NEXT_PUBLIC_SERVICEDASH_SITE_KEY` | browser | Public key only |
 | `SERVICEDASH_API_URL` | both | API host; default `https://api.dashfordevs.com` |
+| `NEXT_PUBLIC_SERVICEDASH_API_URL` | browser | API host for browser calls (tracking, cart, forms). Set it whenever you set `SERVICEDASH_API_URL` to a non-default host |
 | `SERVICEDASH_PLATFORM` | server, optional | Platform slug `createSiteClient()` asserts |
 
 Guards: constructing a client with a **secret** key in a browser throws, putting a
@@ -392,7 +393,7 @@ last column).
 
 ## Errors
 
-Every failed call throws `ServiceDashError` with `status`, `code` (the platform's
+Every failed call, including network failures (`status: 0`, `code: "network_error"`), throws `ServiceDashError` with `status`, `code` (the platform's
 `error` field) and `payload`. The common ones explain themselves:
 `origin_not_allowed` (add the domain to the key), `secret_key_required` (make the
 call server-side), `key_revoked`, `module_not_enabled` (see the table above),

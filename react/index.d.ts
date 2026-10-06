@@ -5,7 +5,7 @@ export { SiteClient };
 
 export interface ServiceDashProviderProps {
   /** A client you built (preferred). */
-  client?: SiteClient;
+  client?: SiteClient | null;
   /** Or options to build one. */
   options?: SiteClientOptions;
   /** Capture utm / click ids / ?ref= on mount. Default true. */

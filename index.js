@@ -364,13 +364,25 @@ export class SiteClient {
       : { cache: "no-store" };
 
     const doFetch = this._fetchImpl || globalThis.fetch;
-    const response = await doFetch(`${this.baseURL}${path}${buildQuery(query)}`, {
-      ...init,
-      method,
-      headers,
-      ...(payloadBody !== undefined ? { body: payloadBody } : {}),
-      ...caching,
-    });
+    let response;
+    try {
+      response = await doFetch(`${this.baseURL}${path}${buildQuery(query)}`, {
+        ...init,
+        method,
+        headers,
+        ...(payloadBody !== undefined ? { body: payloadBody } : {}),
+        ...caching,
+      });
+    } catch (err) {
+      // Caller-initiated aborts stay AbortErrors; everything else (DNS, refused,
+      // TLS, offline) becomes a ServiceDashError so callers catch one type.
+      if (err?.name === "AbortError") throw err;
+      throw new ServiceDashError(`Couldn't reach the ServiceDash API at ${this.baseURL} (${method} ${path}): ${err?.message || err}`, {
+        status: 0,
+        code: "network_error",
+        payload: null,
+      });
+    }
 
     if (response.status === 204) return { ok: true };
 
