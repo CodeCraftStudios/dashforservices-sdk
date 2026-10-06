@@ -1,0 +1,54 @@
+{
+  "name": "servicedash-sdk",
+  "version": "0.1.0-alpha",
+  "description": "ServiceDash public-site SDK: connects a tenant's website (landing page + store) to the ServiceDash platform on Dash4Devs. Private; not for public distribution.",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "bin": {
+    "servicedash": "./cli/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./server": {
+      "types": "./server.d.ts",
+      "import": "./server.js",
+      "default": "./server.js"
+    },
+    "./react": {
+      "types": "./react/index.d.ts",
+      "import": "./react/index.jsx",
+      "default": "./react/index.jsx"
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "server.js",
+    "server.d.ts",
+    "services/",
+    "react/",
+    "cli/",
+    "README.md"
+  ],
+  "author": "John Molina from CodeCraft Studios <johnmolina@codecraftstudios.net>",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
