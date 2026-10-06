@@ -37,6 +37,27 @@ ESM and JSX with no build step, so let Next compile it:
 export default { transpilePackages: ["servicedash-sdk"] };
 ```
 
+## Files (Media Library)
+
+Everything uploaded in the dashboard's **Media library** is available to the site.
+Find files by **label or name**, no ids needed:
+
+```ts
+const hero = await sd.files.find("hero");                 // SiteFile | null
+const heroUrl = await sd.files.url("hero");               // string | null
+const logo = await sd.files.folder("Brand").find("logo"); // inside a folder (name or "Brand/Logos" path)
+const gallery = await sd.files.folder("Gallery").all();   // every file in a folder
+// Aliases if you prefer the long names:
+await sd.files.getFileOrReturnNull("hero");
+await sd.files.getFolder("Brand").getFileOrReturnNull("logo");
+```
+
+Matching order: exact label, then name, name without extension, a loose match
+(ignoring case and punctuation), then whole words, so `"hero"` finds `hero.png`,
+`Hero Image.jpg` or `hero-banner.png` (but not `superhero.png`). Set a **label** on a
+file in the dashboard when you want a guaranteed, rename-proof handle.
+Endpoint: `GET /api/site/files?label=&folder=&limit=&offset=` (module `media`, exists today).
+
 ## Keys and env
 
 Each tenant site gets its own keys in **ServiceDash dashboard: Website, then API keys**.

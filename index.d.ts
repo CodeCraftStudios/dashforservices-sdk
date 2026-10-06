@@ -90,6 +90,66 @@ export interface Address {
 
 // ─── Content / page groups / blog / legal ─────────────────────────────────
 
+/* ---------- Files (Media Library) ---------- */
+
+export interface SiteFileVariant { url: string; width: number }
+export interface SiteFile {
+  id: string;
+  name: string;
+  /** Stable handle set in the dashboard, e.g. "hero". */
+  label: string | null;
+  url: string;
+  original_filename: string;
+  file_type: "image" | "video" | "document" | "other";
+  content_type: string;
+  size_bytes: number;
+  file_size_display: string;
+  alt: string;
+  description: string;
+  width: number | null;
+  height: number | null;
+  tags: string[];
+  metadata: Record<string, unknown>;
+  display_order: number;
+  folder_id: string | null;
+  created_at: string | null;
+  lqip?: string | null;
+  variants_ready?: boolean;
+  variants?: { webp?: SiteFileVariant[] };
+}
+
+export interface FileListQuery {
+  /** Folder name or full path, e.g. "Gallery" or "Brand/Logos". */
+  folder?: string;
+  /** Exact label. */
+  label?: string;
+  limit?: number;
+  offset?: number;
+}
+
+/** Best match for a name or label: label, name, name without extension, then a loose match. */
+export declare function matchFile(files: SiteFile[], nameOrLabel: string): SiteFile | null;
+
+export declare class FileFolder {
+  readonly name: string;
+  list(query?: Omit<FileListQuery, "folder">): Promise<{ files: SiteFile[]; total: number; limit: number; offset: number }>;
+  all(): Promise<SiteFile[]>;
+  find(nameOrLabel: string): Promise<SiteFile | null>;
+  getFileOrReturnNull(nameOrLabel: string): Promise<SiteFile | null>;
+  url(nameOrLabel: string): Promise<string | null>;
+}
+
+export declare class FilesModule {
+  list(query?: FileListQuery): Promise<{ files: SiteFile[]; total: number; limit: number; offset: number }>;
+  all(query?: Pick<FileListQuery, "folder">): Promise<SiteFile[]>;
+  /** The file whose label or name matches (e.g. "hero"), or null. */
+  find(nameOrLabel: string, opts?: { folder?: string }): Promise<SiteFile | null>;
+  getFileOrReturnNull(nameOrLabel: string, opts?: { folder?: string }): Promise<SiteFile | null>;
+  url(nameOrLabel: string, opts?: { folder?: string }): Promise<string | null>;
+  folder(nameOrPath: string): FileFolder;
+  getFolder(nameOrPath: string): FileFolder;
+}
+
 export declare class ContentModule {
   list(query?: { section?: string; limit?: number; offset?: number }): Promise<{ content: SiteRecord[] } & Paged>;
   get(slug: string): Promise<{ content: SiteRecord }>;
@@ -913,6 +973,7 @@ export declare class SiteClient {
   readonly customerToken: string | null;
 
   content: ContentModule;
+  files: FilesModule;
   pageGroups: PageGroupsModule;
   blog: BlogModule;
   products: ProductsModule;
