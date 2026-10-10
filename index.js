@@ -27,6 +27,7 @@ import { FilesModule, FileFolder, matchFile } from "./services/files.js";
 import { PageGroupsModule, PageGroup } from "./services/pageGroups.js";
 import { BlogModule } from "./services/blog.js";
 import { ProductsModule } from "./services/products.js";
+import { CategoriesModule, toCategory } from "./services/categories.js";
 import { CartModule } from "./services/cart.js";
 import { CheckoutModule } from "./services/checkout.js";
 import { SubscriptionsModule } from "./services/subscriptions.js";
@@ -224,6 +225,7 @@ export class SiteClient {
     this.pageGroups = new PageGroupsModule(this);
     this.blog = new BlogModule(this);
     this.products = new ProductsModule(this);
+    this.categories = new CategoriesModule(this);
     this.cart = new CartModule(this, { storage: this.storage });
     this.checkout = new CheckoutModule(this);
     this.subscriptions = new SubscriptionsModule(this);
@@ -435,6 +437,7 @@ export class SiteClient {
 
 export {
   PageGroup,
+  toCategory,
   FileFolder,
   matchFile,
   attributionFromCookies,

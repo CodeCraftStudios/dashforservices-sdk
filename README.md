@@ -58,6 +58,29 @@ Matching order: exact label, then name, name without extension, a loose match
 file in the dashboard when you want a guaranteed, rename-proof handle.
 Endpoint: `GET /api/site/files?label=&folder=&limit=&offset=` (module `media`, exists today).
 
+## Categories
+
+Product categories as edited on the dashboard's category page, with their labeled
+files and gallery images. A site only sees its own org's categories, and only ones
+marked visible.
+
+```ts
+const cat = await sd.categories.get("water-softeners");          // Category | null
+cat.image; cat.heroImage; cat.heroImageMobile;                     // cover (1:1), hero (16:9), mobile hero (9:16)
+
+const pdf = await sd.categories.file(cat, "category_pdf");         // { url, label, name } | null
+const pdfUrl = await sd.categories.fileUrl("water-softeners", "category_pdf");
+const shot = await sd.categories.image(cat, "showroom");           // { url, alt, label } | null
+const all = await sd.categories.gallery(cat);                      // in dashboard order
+
+sd.categories.customField(cat, "warranty_years", 0);               // any JSON value from Custom fields
+const tree = await sd.categories.list();                           // flat; nest by parentId
+```
+
+Labels are set in the dashboard when a file or gallery image is added
+(lowercase letters, digits, `_` or `-`, unique within the category).
+Endpoints: `GET /api/site/categories`, `/api/site/categories/<slug>` (module `inventory`, exists today).
+
 ## Keys and env
 
 Each tenant site gets its own keys in **ServiceDash dashboard: Website, then API keys**.

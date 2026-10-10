@@ -977,6 +977,7 @@ export declare class SiteClient {
   pageGroups: PageGroupsModule;
   blog: BlogModule;
   products: ProductsModule;
+  categories: CategoriesModule;
   cart: CartModule;
   checkout: CheckoutModule;
   subscriptions: SubscriptionsModule;
@@ -1007,3 +1008,53 @@ export declare class SiteClient {
 }
 
 export default SiteClient;
+
+/* ---------- Categories ---------- */
+
+export interface CategoryFile { url: string; label: string; name: string }
+export interface CategoryImage { url: string; alt: string; label: string }
+
+export interface Category {
+  id: string;
+  slug: string;
+  name: string;
+  shortDescription: string;
+  /** HTML from the dashboard's rich text editor. */
+  description: string;
+  parentId: string;
+  sort: number;
+  visible: boolean;
+  showInHome: boolean;
+  navbarName: string;
+  navbarCaption: string;
+  /** Square cover. */
+  image: string;
+  /** 16:9. */
+  heroImage: string;
+  /** 9:16. */
+  heroImageMobile: string;
+  seo: { title: string; description: string; keywords: string; ogImage: string; schemaJson: string };
+  faqs: { question: string; answer: string }[];
+  files: CategoryFile[];
+  gallery: CategoryImage[];
+  customFields: Record<string, unknown>;
+  updatedAt: string;
+}
+
+export declare class CategoriesModule {
+  /** Every visible category of the site's org, flat; nest by parentId. */
+  list(): Promise<Category[]>;
+  /** One category by slug, or null. */
+  get(slug: string): Promise<Category | null>;
+  resolve(categoryOrSlug: Category | string): Promise<Category | null>;
+  /** The file with this label, e.g. "category_pdf". */
+  file(categoryOrSlug: Category | string, label: string): Promise<CategoryFile | null>;
+  fileUrl(categoryOrSlug: Category | string, label: string): Promise<string | null>;
+  /** The gallery image with this label, e.g. "showroom". */
+  image(categoryOrSlug: Category | string, label: string): Promise<CategoryImage | null>;
+  gallery(categoryOrSlug: Category | string): Promise<CategoryImage[]>;
+  customField<T = unknown>(category: Category | null | undefined, key: string, fallback?: T): T | undefined;
+  children(all: Category[], categoryOrId: Category | string): Category[];
+}
+
+export declare function toCategory(record: SiteRecord | null | undefined): Category | null;

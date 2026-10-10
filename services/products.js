@@ -21,6 +21,30 @@
 
 import { seg, orNull } from "./_util.js";
 
+/**
+ * The dashboard stores sizes in the Dash4Devs shape (label, price,
+ * discounted_price, attribute_option_id, plans). Sites read `name`,
+ * `compare_at_price` and `subscription_plans`, so both are offered.
+ */
+function normaliseSize(s) {
+  const sale = Number(s.discounted_price) > 0 ? Number(s.discounted_price) : null;
+  const plans = s.subscription_plans ?? (s.plans || []).filter((p) => p.active !== false).map((p) => ({
+    id: p.id,
+    interval_length: p.intervalLength,
+    interval_unit: p.intervalUnit,
+    discount_percent: p.discountPercent,
+  }));
+  const { cost: _cost, ...rest } = s;
+  return {
+    ...rest,
+    name: s.name ?? s.label,
+    price: sale ?? (s.price ?? null),
+    compare_at_price: sale !== null ? s.price : (s.compare_at_price ?? null),
+    stock_status: s.stock_status ?? (s.stock === undefined ? undefined : Number(s.stock) > 0 ? "in_stock" : "out_of_stock"),
+    subscription_plans: plans,
+  };
+}
+
 export class ProductsModule {
   constructor(client) {
     this.client = client;
@@ -71,7 +95,7 @@ export class ProductsModule {
    */
   sizes(product) {
     const data = product?.data ?? product ?? {};
-    if (Array.isArray(data.sizes) && data.sizes.length) return data.sizes;
+    if (Array.isArray(data.sizes) && data.sizes.length) return data.sizes.filter((s) => s.is_active !== false).map(normaliseSize);
     const variant = Array.isArray(data.variants) ? data.variants[0] : null;
     if (!variant?.options) return [];
     return variant.options.map((o, i) => ({
