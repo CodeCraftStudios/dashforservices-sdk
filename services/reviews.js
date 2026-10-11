@@ -31,16 +31,15 @@ export class ReviewsModule {
    */
   async list(query = {}) {
     const { product, plumber, rating, sort, withPhotos, limit = 20, offset } = query;
-    if (!product && !plumber) throw new Error("reviews.list: pass product or plumber");
+    // No product or plumber: every published review of the site's org (home page, JSON-LD).
     return this.client._fetch("/api/site/reviews", {
       query: { product, plumber, rating, sort, with_photos: withPhotos ? "true" : undefined, limit, offset },
-      tags: ["servicedash:reviews", `servicedash:reviews:${product || plumber}`],
+      tags: ["servicedash:reviews", `servicedash:reviews:${product || plumber || "all"}`],
     });
   }
 
   /** Rating summary only (cheap; for product cards and JSON-LD). */
   async summary({ product, plumber } = {}) {
-    if (!product && !plumber) throw new Error("reviews.summary: pass product or plumber");
     return this.client._fetch("/api/site/reviews/summary", {
       query: { product, plumber },
       tags: ["servicedash:reviews"],
