@@ -24,7 +24,12 @@
  * timer and sequences is NEW (ServiceDash "install_crm" module).
  */
 
-export const LEAD_KINDS = Object.freeze(["quote", "water_test", "site_survey", "callback", "contact", "commercial_quote"]);
+/**
+ * quote: home install price request. water_test: free mail-in kit. site_survey and
+ * commercial_quote: business. callback: schedule a call. contact: general. service:
+ * repair or maintenance (opens a repair job). installer / affiliate: partner signups.
+ */
+export const LEAD_KINDS = Object.freeze(["quote", "water_test", "site_survey", "callback", "contact", "commercial_quote", "service", "installer", "affiliate"]);
 export const CUSTOMER_TYPES = Object.freeze(["homeowner", "commercial"]);
 export const WATER_CONCERNS = Object.freeze(["spots_scale", "dry_skin_hair", "taste_smell", "appliances"]);
 export const WATER_PROBLEMS = Object.freeze(["iron_stains", "rotten_egg", "other"]);

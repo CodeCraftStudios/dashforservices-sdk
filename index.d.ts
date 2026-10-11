@@ -794,7 +794,7 @@ export declare class PlumbersModule {
 
 // ─── Leads / attribution / affiliates / insights ──────────────────────────
 
-export type LeadKind = "quote" | "water_test" | "site_survey" | "callback" | "contact" | "commercial_quote";
+export type LeadKind = "quote" | "water_test" | "site_survey" | "callback" | "contact" | "commercial_quote" | "service" | "installer" | "affiliate";
 export declare const LEAD_KINDS: readonly LeadKind[];
 export declare const CUSTOMER_TYPES: readonly ["homeowner", "commercial"];
 export declare const WATER_CONCERNS: readonly ["spots_scale", "dry_skin_hair", "taste_smell", "appliances"];
