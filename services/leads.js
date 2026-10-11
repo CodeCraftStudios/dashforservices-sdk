@@ -59,7 +59,9 @@ function normalize(data) {
     // commercial
     company, businessType, business_type, locations, unitsOrRooms, units, dailyUsageGallons, contactRole,
     // both
-    message, preferredContact, preferredTime, productInterest, ...extra
+    message, preferredContact, preferredTime, productInterest,
+    // what a cost calculator recommended, for the rep
+    recommendedSystem, recommended_system, ...extra
   } = data || {};
   const type = customerType ?? customer_type ?? (company || businessType || business_type ? "commercial" : "homeowner");
   if (!CUSTOMER_TYPES.includes(type)) throw new Error(`leads: customerType must be one of ${CUSTOMER_TYPES.join(", ")}`);
@@ -79,6 +81,7 @@ function normalize(data) {
     preferred_contact: preferredContact,
     preferred_time: preferredTime,
     product_interest: productInterest,
+    recommended_system: recommendedSystem ?? recommended_system,
   };
   if (type === "homeowner") {
     Object.assign(out, {

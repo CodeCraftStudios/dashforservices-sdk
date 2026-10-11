@@ -816,6 +816,8 @@ export interface LeadBase {
   preferredContact?: "call" | "text" | "email";
   preferredTime?: string;
   productInterest?: string;
+  /** The system a cost calculator recommended, shown to the rep. */
+  recommendedSystem?: string;
   [extra: string]: unknown;
 }
 
