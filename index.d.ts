@@ -655,6 +655,12 @@ export interface SiteOrg {
   phone: string;
   address: string;
   timezone: string;
+  /** Opening hours as customers read them. Settings > General. */
+  hours: string;
+  /** Trade license as it should appear. Settings > General. */
+  license: string;
+  /** Where Leave a review buttons go. Settings > General. */
+  review_link: string;
   accent: string;
 }
 
