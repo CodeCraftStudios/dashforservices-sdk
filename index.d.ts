@@ -644,6 +644,24 @@ export interface Hardness {
   nearby_zip?: string;
 }
 
+export interface SiteOrg {
+  slug: string;
+  name: string;
+  short: string;
+  legal_name: string;
+  domain: string;
+  email: string;
+  /** Empty until set in Settings > General. */
+  phone: string;
+  address: string;
+  timezone: string;
+  accent: string;
+}
+
+export declare class OrgModule {
+  get(): Promise<{ org: SiteOrg }>;
+}
+
 export declare class HardnessModule {
   byZip(zip: string): Promise<{ hardness: Hardness | null }>;
   byCity(city: string, state: string): Promise<{ hardness: (Hardness & { gpg_avg: number; gpg_min: number; gpg_max: number; zips: string[] }) | null }>;
@@ -999,6 +1017,7 @@ export declare class SiteClient {
   forms: FormsModule;
   quotes: QuotesModule;
   hardness: HardnessModule;
+  org: OrgModule;
   affiliates: AffiliatesModule;
   attribution: AttributionModule;
   jobs: JobsModule;

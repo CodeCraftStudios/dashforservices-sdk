@@ -43,6 +43,7 @@ import { JobsModule, JOB_STEPS, CUSTOMER_JOB_STEPS } from "./services/jobs.js";
 import { RefillsModule } from "./services/refills.js";
 import { QuotesModule, QUOTE_TIERS } from "./services/quotes.js";
 import { HardnessModule, HARDNESS_BANDS } from "./services/hardness.js";
+import { OrgModule } from "./services/org.js";
 import { AffiliatesModule } from "./services/affiliates.js";
 import { AttributionModule, attributionFromCookies } from "./services/attribution.js";
 import { LEAD_KINDS, CUSTOMER_TYPES, WATER_CONCERNS, WATER_PROBLEMS, TIMELINES, BUSINESS_TYPES } from "./services/leads.js";
@@ -241,6 +242,7 @@ export class SiteClient {
     this.forms = new FormsModule(this);
     this.quotes = new QuotesModule(this);
     this.hardness = new HardnessModule(this);
+    this.org = new OrgModule(this);
     this.affiliates = new AffiliatesModule(this);
     this.jobs = new JobsModule(this);
     this.refills = new RefillsModule(this);
