@@ -9,7 +9,8 @@
  * tied to a real order or job (orderId / jobId, or a signed-in customer) is
  * marked verified. Public key OK.
  *
- * Backend: NEW. /api/site/reviews (ServiceDash "reviews" module).
+ * Backend: EXISTS for list and summary (/api/site/reviews, /summary): published
+ * `review` records. Submitting and "helpful" votes are not built yet.
  */
 
 export class ReviewsModule {

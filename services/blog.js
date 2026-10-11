@@ -1,7 +1,7 @@
 /**
  * Blog: published posts and categories.
  *
- * Backend: NEW. /api/site/blog/posts[/<slug>], /api/site/blog/categories
+ * Backend: EXISTS for /api/site/blog/posts[/<slug>]. Categories and related are not built yet.
  * (ServiceDash "blog" module).
  */
 

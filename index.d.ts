@@ -638,6 +638,10 @@ export interface Hardness {
   source_url?: string;
   notes?: string;
   updated_at?: string;
+  /** "zip": this zip's own data. "nearby": a known zip on the same supply stands in (area data matched). */
+  match?: "zip" | "nearby";
+  /** The zip whose data a nearby match used. */
+  nearby_zip?: string;
 }
 
 export declare class HardnessModule {

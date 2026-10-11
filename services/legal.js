@@ -9,7 +9,8 @@
  * `version` is what agreements and SMS consent reference, so a lead or an
  * order can say exactly which text the customer accepted.
  *
- * Backend: NEW. /api/site/legal[/<slug>] (ServiceDash "legal" module).
+ * Backend: EXISTS. /api/site/legal[/<slug>]: the live version of each published
+ * ServiceDash legal document.
  */
 
 import { seg, orNull } from "./_util.js";

@@ -10,7 +10,8 @@
  *   const { item }  = await sd.pageGroup("cities").get("phoenix-az");
  *   const az        = await sd.pageGroup("cities").filter({ state: "AZ" });
  *
- * Backend: NEW. /api/site/page-groups[/<group>[/<item>]] (module "pages").
+ * Backend: EXISTS. /api/site/page-groups/<group>[/<item>] (module "pages"): the
+ * org's published page_item records from the dashboard's Website > Pages.
  */
 
 import { seg } from "./_util.js";

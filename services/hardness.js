@@ -9,8 +9,10 @@
  *
  * gpg = grains per gallon; ppm = mg/L as CaCO3 (1 gpg = 17.1 ppm).
  *
- * Backend: NEW. /api/site/hardness?zip= and /api/site/hardness/cities
- * (ServiceDash "regulations" module's reference data).
+ * Backend: EXISTS. /api/site/hardness?zip=, ?city=&state= and /api/site/hardness/cities,
+ * from the ServiceDash zip water database (utility reports + our lab results).
+ * A zip without its own data can be answered by a nearby known zip on the same
+ * water supply (`match: "nearby"`, `nearby_zip`); otherwise `hardness` is null.
  */
 
 export const HARDNESS_BANDS = Object.freeze([
