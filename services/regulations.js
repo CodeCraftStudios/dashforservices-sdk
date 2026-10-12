@@ -13,7 +13,7 @@
  *     install_fee_timing: "on_completion" | "at_booking",   // FL = at_booking (spec section 6)
  *     sources: [{ title, url }], updated_at, disclaimer }
  *
- * Backend: NEW. /api/site/regulations[/<state>] (ServiceDash "regulations" module).
+ * Backend: NEW. /api/site/regulations[/<state>] (DashForServices "regulations" module).
  */
 
 import { seg } from "./_util.js";

@@ -12,7 +12,7 @@
  * (`sd_attr`) so a server route can read them too; the affiliate code gets
  * its own cookie (`sd_ref`, 30 days by default, last referrer wins).
  *
- *   sd.attribution.capture();            // once per page load (ServiceDashProvider does it)
+ *   sd.attribution.capture();            // once per page load (DashForServicesProvider does it)
  *   const a = sd.attribution.snapshot(); // attach to anything you submit
  *   // server: attributionFromCookies(request.headers.get("cookie"))
  *

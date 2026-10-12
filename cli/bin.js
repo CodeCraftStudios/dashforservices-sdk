@@ -5,8 +5,8 @@
  *   servicedash status     whoami: site, platform, key kind/environment, enabled modules
  *     --json               raw JSON
  *
- * Reads SERVICEDASH_SITE_KEY (falling back to NEXT_PUBLIC_SERVICEDASH_SITE_KEY)
- * and SERVICEDASH_API_URL from the environment, then .env.local / .env in the
+ * Reads DASHFORSERVICES_SITE_KEY (falling back to NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY)
+ * and DASHFORSERVICES_API_URL from the environment, then .env.local / .env in the
  * working directory. Any site key works for status; nothing is written.
  */
 
@@ -32,10 +32,10 @@ function parseEnvFile(filePath) {
 
 function loadConfig(cwd = process.cwd()) {
   const fileEnv = { ...parseEnvFile(path.join(cwd, ".env")), ...parseEnvFile(path.join(cwd, ".env.local")) };
-  const get = (name) => process.env[name] || fileEnv[name] || "";
+  const get = (name) => process.env[name] || fileEnv[name] || process.env[name.replace("DASHFORSERVICES", "SERVICEDASH")] || fileEnv[name.replace("DASHFORSERVICES", "SERVICEDASH")] || "";
   const key = get(ENV.SITE_KEY) || get(ENV.PUBLIC_SITE_KEY);
   if (!key) throw new Error(`${ENV.SITE_KEY} is not set (checked env, .env.local, .env)`);
-  return { key, baseURL: get(ENV.API_URL) || DEFAULT_BASE_URL, platform: get("SERVICEDASH_PLATFORM") || undefined };
+  return { key, baseURL: get(ENV.API_URL) || DEFAULT_BASE_URL, platform: get("DASHFORSERVICES_PLATFORM") || undefined };
 }
 
 async function status(args) {
@@ -55,7 +55,7 @@ async function status(args) {
     return;
   }
   const modules = Array.isArray(who?.modules) ? who.modules : [];
-  console.log(`servicedash-sdk ${SDK_VERSION}  ->  ${cfg.baseURL}`);
+  console.log(`dashforservices-sdk ${SDK_VERSION}  ->  ${cfg.baseURL}`);
   console.log(`site          ${who?.site?.name || "(unnamed)"}  ${who?.site?.domain || ""}  [${who?.site?.id || "?"}]`);
   console.log(`platform      ${who?.platform?.name || "?"} (${who?.platform?.slug || "?"})`);
   console.log(`key           ${who?.key?.kind || sd.kind} / ${who?.key?.environment || sd.environment}`);

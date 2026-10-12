@@ -10,7 +10,7 @@
  * order can say exactly which text the customer accepted.
  *
  * Backend: EXISTS. /api/site/legal[/<slug>]: the live version of each published
- * ServiceDash legal document.
+ * DashForServices legal document.
  */
 
 import { seg, orNull } from "./_util.js";

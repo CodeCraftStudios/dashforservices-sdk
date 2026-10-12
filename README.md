@@ -1,6 +1,6 @@
-# servicedash-sdk
+# dashforservices-sdk
 
-The **ServiceDash public-site SDK**: what a ServiceDash tenant's website runs on.
+The **DashForServices public-site SDK**: what a DashForServices tenant's website runs on.
 That covers the landing page, blog, service and city pages, page groups, the store
 (products, cart, Stripe checkout, filter subscriptions), install quotes and quote
 checkout, reviews, the plumber directory, water hardness and local regulations,
@@ -14,8 +14,8 @@ from the repo, never npm.
 
 > Status: `0.1.0-alpha`. About a third of the endpoints exist on Dash4Devs today.
 > The rest are specified in `../servicedash/docs/backend-modules.md` and must be built as
-> ServiceDash platform modules. See [Backend status](#backend-status). A call to
-> an endpoint that doesn't exist yet throws a `ServiceDashError` (status 404) whose
+> DashForServices platform modules. See [Backend status](#backend-status). A call to
+> an endpoint that doesn't exist yet throws a `DashForServicesError` (status 404) whose
 > message says so.
 
 ## Install
@@ -25,16 +25,16 @@ Pin a commit tarball, like `dash4devs-platform`:
 ```jsonc
 // package.json
 "dependencies": {
-  "servicedash-sdk": "https://github.com/CodeCraftStudios/servicedash-sdk/archive/<commit-sha>.tar.gz"
+  "dashforservices-sdk": "https://github.com/CodeCraftStudios/dashforservices-sdk/archive/<commit-sha>.tar.gz"
 }
 ```
 
-or `npm install github:CodeCraftStudios/servicedash-sdk`. The package ships plain
+or `npm install github:CodeCraftStudios/dashforservices-sdk`. The package ships plain
 ESM and JSX with no build step, so let Next compile it:
 
 ```ts
 // next.config.ts
-export default { transpilePackages: ["servicedash-sdk"] };
+export default { transpilePackages: ["dashforservices-sdk"] };
 ```
 
 ## Files (Media Library)
@@ -83,7 +83,7 @@ Endpoints: `GET /api/site/categories`, `/api/site/categories/<slug>` (module `in
 
 ## Keys and env
 
-Each tenant site gets its own keys in **ServiceDash dashboard: Website, then API keys**.
+Each tenant site gets its own keys in **DashForServices dashboard: Website, then API keys**.
 The value is shown once.
 
 ```
@@ -97,20 +97,20 @@ never to a website.
 
 | Variable | Where | Purpose |
 | --- | --- | --- |
-| `SERVICEDASH_SITE_KEY` | server only | Secret (or public) key for server components, route handlers, the CLI |
-| `NEXT_PUBLIC_SERVICEDASH_SITE_KEY` | browser | Public key only |
-| `SERVICEDASH_API_URL` | both | API host; default `https://api.dashfordevs.com` |
-| `NEXT_PUBLIC_SERVICEDASH_API_URL` | browser | API host for browser calls (tracking, cart, forms). Set it whenever you set `SERVICEDASH_API_URL` to a non-default host |
-| `SERVICEDASH_PLATFORM` | server, optional | Platform slug `createSiteClient()` asserts |
+| `DASHFORSERVICES_SITE_KEY` | server only | Secret (or public) key for server components, route handlers, the CLI |
+| `NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY` | browser | Public key only |
+| `DASHFORSERVICES_API_URL` | both | API host; default `https://api.dashfordevs.com` |
+| `NEXT_PUBLIC_DASHFORSERVICES_API_URL` | browser | API host for browser calls (tracking, cart, forms). Set it whenever you set `DASHFORSERVICES_API_URL` to a non-default host |
+| `DASHFORSERVICES_PLATFORM` | server, optional | Platform slug `createSiteClient()` asserts |
 
 Guards: constructing a client with a **secret** key in a browser throws, putting a
 secret key in **any** `NEXT_PUBLIC_*` variable throws, and importing
-`servicedash-sdk/server` in a browser bundle throws at module load.
+`dashforservices-sdk/server` in a browser bundle throws at module load.
 
 ### Pairing
 
 Unlike `localplug-sdk`, this SDK is not hardwired to one platform slug, because
-each ServiceDash tenant can be its own Dash4Devs platform. Pass `platform` and the
+each DashForServices tenant can be its own Dash4Devs platform. Pass `platform` and the
 first call checks `/api/site/whoami`; a key from another platform is rejected
 (`code: "platform_mismatch"`). Leave it out and any valid site key is accepted,
 with no extra round-trip.
@@ -125,10 +125,10 @@ new SiteClient({ key, platform: "servicedash-clearline" });
 
 ```ts
 // lib/servicedash.ts (browser-safe: public key)
-import { SiteClient } from "servicedash-sdk";
+import { SiteClient } from "dashforservices-sdk";
 
 export const sd = new SiteClient({
-  key: process.env.NEXT_PUBLIC_SERVICEDASH_SITE_KEY, // written literally so Next inlines it
+  key: process.env.NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY, // written literally so Next inlines it
   checkout: { mode: "session" },
 });
 ```
@@ -136,9 +136,9 @@ export const sd = new SiteClient({
 ```ts
 // lib/servicedash.server.ts (server only: secret key)
 import "server-only";
-import { createSiteClient } from "servicedash-sdk/server";
+import { createSiteClient } from "dashforservices-sdk/server";
 
-export const sdServer = createSiteClient(); // SERVICEDASH_SITE_KEY, SERVICEDASH_API_URL, SERVICEDASH_PLATFORM
+export const sdServer = createSiteClient(); // DASHFORSERVICES_SITE_KEY, DASHFORSERVICES_API_URL, DASHFORSERVICES_PLATFORM
 ```
 
 ### 2. Server components read content
@@ -153,7 +153,7 @@ static build. Writes are never retried.
 
 ```tsx
 // app/water-softeners/[city]/page.tsx
-import { sdServer as sd } from "@/lib/servicedash.server";
+import { sdServer as sd } from "@/lib/dashforservices.server";
 
 export async function generateStaticParams() {
   return (await sd.pageGroup("cities").slugs()).map((city) => ({ city }));
@@ -177,15 +177,15 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
 ```tsx
 // app/providers.tsx
 "use client";
-import { ServiceDashProvider, PageView } from "servicedash-sdk/react";
-import { sd } from "@/lib/servicedash";
+import { DashForServicesProvider, PageView } from "dashforservices-sdk/react";
+import { sd } from "@/lib/dashforservices";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ServiceDashProvider client={sd}>
+    <DashForServicesProvider client={sd}>
       <PageView />
       {children}
-    </ServiceDashProvider>
+    </DashForServicesProvider>
   );
 }
 ```
@@ -198,7 +198,7 @@ navigations; pass `path={usePathname()}` if you would rather drive it yourself.
 
 ```tsx
 "use client";
-import { useCart, useServiceDash, TrackClick } from "servicedash-sdk/react";
+import { useCart, useDashForServices, TrackClick } from "dashforservices-sdk/react";
 
 export function AddToCart({ product, size, plan }) {
   const { add } = useCart();
@@ -221,7 +221,7 @@ export function AddToCart({ product, size, plan }) {
 }
 
 export function CheckoutButton({ customer, shippingAddress }) {
-  const sd = useServiceDash();
+  const sd = useDashForServices();
   const { sync, isEmpty } = useCart();
   return (
     <button
@@ -247,12 +247,12 @@ export function CheckoutButton({ customer, shippingAddress }) {
 
 ```tsx
 "use client";
-import { useServiceDash } from "servicedash-sdk/react";
+import { useDashForServices } from "dashforservices-sdk/react";
 
 const SMS_CONSENT_VERSION = "sms-2026-10"; // matches the legal page your lawyer approved
 
 export function QuoteForm() {
-  const sd = useServiceDash();
+  const sd = useDashForServices();
   async function onSubmit(form: FormData) {
     await sd.leads.requestQuote(
       {
@@ -288,7 +288,7 @@ request:
 ```ts
 // app/account/installs/page.tsx
 import { cookies } from "next/headers";
-import { sdServer } from "@/lib/servicedash.server";
+import { sdServer } from "@/lib/dashforservices.server";
 
 export default async function Installs() {
   const me = sdServer.asCustomer((await cookies()).get("sd_customer")?.value);
@@ -361,12 +361,12 @@ What `insights` sends, exactly as the platform ingest (`platforms/insights_views
 
 Bots are classified from the user agent and kept out of reports; the client IP is only stored hashed.
 
-### React (`servicedash-sdk/react`)
+### React (`dashforservices-sdk/react`)
 
 | Export | What it does |
 | --- | --- |
-| `<ServiceDashProvider client={sd}>` | Provides the client; captures attribution on mount |
-| `useServiceDash()` | The client |
+| `<DashForServicesProvider client={sd}>` | Provides the client; captures attribution on mount |
+| `useDashForServices()` | The client |
 | `useCart({autoSync})` | Live cart: `lines`, `count`, `subtotal`, `totals`, `add`, `update`, `setPlan`, `remove`, `clear`, `sync`, `syncing`, `error`. Persists to localStorage, follows other tabs, renders empty on the server so hydration matches |
 | `<TrackClick event label href props>` | Records a click on its single child (no wrapper element), then runs the child's own `onClick` |
 | `<PageView path? options?/>` | Starts insights; automatic pageviews or controlled by `path` |
@@ -390,7 +390,7 @@ to one of two places:
 
    ```ts
    // app/api/checkout/route.ts
-   import { sdServer } from "@/lib/servicedash.server";
+   import { sdServer } from "@/lib/dashforservices.server";
    export async function POST(req: Request) {
      const body = await req.json(); // the buildBody() shape
      // ...verify captcha, enrich body.metadata...
@@ -417,8 +417,8 @@ npx servicedash status          # site, platform, key kind/env, enabled modules
 npx servicedash status --json
 ```
 
-Reads `SERVICEDASH_SITE_KEY` (or the public key), `SERVICEDASH_API_URL` and
-`SERVICEDASH_PLATFORM` from env, `.env.local` and `.env`. No image CDN commands
+Reads `DASHFORSERVICES_SITE_KEY` (or the public key), `DASHFORSERVICES_API_URL` and
+`DASHFORSERVICES_PLATFORM` from env, `.env.local` and `.env`. No image CDN commands
 yet.
 
 ## Backend status
@@ -426,7 +426,7 @@ yet.
 Every endpoint the SDK calls, and whether it exists on the Dash4Devs site
 surface today. Everything marked **NEW** is specified in
 [`../servicedash/docs/backend-modules.md`](../servicedash/docs/backend-modules.md) and must be built as
-a ServiceDash platform module (the platform module key that gates it is in the
+a DashForServices platform module (the platform module key that gates it is in the
 last column).
 
 | SDK call | Endpoint | Today | Module |
@@ -441,7 +441,7 @@ last column).
 | `leads.*` | `POST /api/site/leads` | **Exists** (writes a `contact`). Routing into `install_lead` with call timer, consent and sequences is NEW | `contacts`, then `install_crm` |
 | `customers.subscribe` | `POST /api/site/customers` | **Exists** | `customers` |
 | `insights.*` | `POST /api/site/insights?k=<key>` (text/plain JSON, no preflight); reports: `GET /api/platform/sites/<website id>/insights?days=N` (platform key) | **Exists** (pageview, click, session_start, custom). The report returns totals, a timeseries, top pages, referrers and first-touch UTM; click, event, device and geo breakdowns are NEW | `websites` |
-| (not wrapped) | `/api/site/locations`, `/files`, `/cdn/*`, `/klaviyo`, giveaways | Exist; not used by ServiceDash sites yet | |
+| (not wrapped) | `/api/site/locations`, `/files`, `/cdn/*`, `/klaviyo`, giveaways | Exist; not used by DashForServices sites yet | |
 | `pageGroup(slug).*`, `pageGroups.list` | `GET /api/site/page-groups`, `/<group>`, `/<group>/<item>` | NEW | `pages` |
 | `blog.*` | `GET /api/site/blog/posts`, `/posts/<slug>`, `/posts/<slug>/related`, `/blog/categories` | NEW | `blog` |
 | `legal.*` | `GET /api/site/legal`, `/legal/<slug>` | NEW | `legal` |
@@ -462,7 +462,7 @@ last column).
 
 ## Errors
 
-Every failed call, including network failures (`status: 0`, `code: "network_error"`), throws `ServiceDashError` with `status`, `code` (the platform's
+Every failed call, including network failures (`status: 0`, `code: "network_error"`), throws `DashForServicesError` with `status`, `code` (the platform's
 `error` field) and `payload`. The common ones explain themselves:
 `origin_not_allowed` (add the domain to the key), `secret_key_required` (make the
 call server-side), `key_revoked`, `module_not_enabled` (see the table above),

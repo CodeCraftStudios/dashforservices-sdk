@@ -1,19 +1,19 @@
 "use client";
 /**
- * servicedash-sdk/react: provider, hooks and tracking components.
+ * dashforservices-sdk/react: provider, hooks and tracking components.
  *
  * Plain JSX with no build step. Add the package to `transpilePackages` in
  * next.config so Next compiles it:
  *
  *   // next.config.ts
- *   export default { transpilePackages: ["servicedash-sdk"] };
+ *   export default { transpilePackages: ["dashforservices-sdk"] };
  *
  *   // app/providers.tsx
  *   "use client";
- *   import { ServiceDashProvider, PageView } from "servicedash-sdk/react";
- *   import { sd } from "@/lib/servicedash";
+ *   import { DashForServicesProvider, PageView } from "dashforservices-sdk/react";
+ *   import { sd } from "@/lib/dashforservices";
  *   export function Providers({ children }) {
- *     return <ServiceDashProvider client={sd}><PageView />{children}</ServiceDashProvider>;
+ *     return <DashForServicesProvider client={sd}><PageView />{children}</DashForServicesProvider>;
  *   }
  */
 
@@ -43,9 +43,9 @@ const EMPTY_CART = Object.freeze({ id: null, lines: [], totals: null, warnings: 
  *
  * @param {{client?: SiteClient, options?: object, captureAttribution?: boolean, children?: any}} props
  */
-export function ServiceDashProvider({ client, options, captureAttribution = true, children }) {
+export function DashForServicesProvider({ client, options, captureAttribution = true, children }) {
   // `client={null}`, or no key configured, mounts a no-op provider: <PageView/>
-  // and <TrackClick> do nothing, and the site still renders. useServiceDash()
+  // and <TrackClick> do nothing, and the site still renders. useDashForServices()
   // throws in that state, because there is genuinely no client to hand out.
   const value = useMemo(() => {
     if (client !== undefined) return client;
@@ -53,7 +53,7 @@ export function ServiceDashProvider({ client, options, captureAttribution = true
       return new SiteClient(options || {});
     } catch (err) {
       if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
-        console.warn(`[servicedash-sdk] No site client: ${err?.message || err}. Tracking is off.`);
+        console.warn(`[dashforservices-sdk] No site client: ${err?.message || err}. Tracking is off.`);
       }
       return null;
     }
@@ -70,9 +70,9 @@ export function ServiceDashProvider({ client, options, captureAttribution = true
 }
 
 /** The SiteClient from the nearest provider. */
-export function useServiceDash() {
+export function useDashForServices() {
   const client = useContext(ServiceDashContext);
-  if (!client) throw new Error("useServiceDash() needs a <ServiceDashProvider> with a configured site key.");
+  if (!client) throw new Error("useDashForServices() needs a <DashForServicesProvider> with a configured site key.");
   return client;
 }
 
@@ -86,7 +86,7 @@ export function useServiceDash() {
  * @param {{autoSync?: boolean}} [options] autoSync: push to the platform after each change (debounced)
  */
 export function useCart({ autoSync } = {}) {
-  const client = useServiceDash();
+  const client = useDashForServices();
   const cart = client.cart;
   useEffect(() => {
     if (autoSync !== undefined) cart.autoSync = autoSync;

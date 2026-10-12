@@ -14,7 +14,7 @@
  *     quantity, next_billing_date, paused_until, last_order_id,
  *     shipping_address, payment_method: { brand, last4 }, created_at }
  *
- * Backend: NEW. /api/site/subscriptions/* (ServiceDash "subscriptions"
+ * Backend: NEW. /api/site/subscriptions/* (DashForServices "subscriptions"
  * module; billing schedule needs a Django app).
  */
 

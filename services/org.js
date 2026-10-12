@@ -8,7 +8,7 @@
  *
  * Empty strings mean "not set yet": hide that line rather than invent one.
  *
- * Backend: EXISTS. /api/site/org (ServiceDash orgs).
+ * Backend: EXISTS. /api/site/org (DashForServices orgs).
  */
 export class OrgModule {
   constructor(client) {

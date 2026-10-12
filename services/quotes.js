@@ -1,7 +1,7 @@
 /**
  * Quotes: the install quote behind a checkout link (/q/<token>).
  *
- * A booking rep builds the quote in the ServiceDash CRM (system size picked
+ * A booking rep builds the quote in the DashForServices CRM (system size picked
  * from people in the home + zip hardness; Good, Better, Best, Ultimate) and
  * texts the link. The page reads it with the token alone: no sign-in, the
  * unguessable token is the credential, and it expires.
@@ -21,7 +21,7 @@
  * Pay with `sd.checkout.fromQuote(token, {...})`.
  *
  * Backend: NEW. /api/site/quotes/<token>[/select|/viewed|/checkout]
- * (ServiceDash "quotes" module).
+ * (DashForServices "quotes" module).
  */
 
 import { seg } from "./_util.js";

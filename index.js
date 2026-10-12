@@ -1,23 +1,23 @@
 /**
- * servicedash-sdk: the ServiceDash public-site SDK.
+ * dashforservices-sdk: the DashForServices public-site SDK.
  *
  * Solution by CodeCraft Studios (https://www.codecraftstudios.net)
  *
- * What a ServiceDash tenant's public website runs on: the landing page, the
+ * What a DashForServices tenant's public website runs on: the landing page, the
  * blog and service pages, the store (products, cart, Stripe checkout, filter
  * subscriptions), reviews, the plumber directory, the local regulations
  * lookup, quote/lead forms and first-party click tracking.
  *
  * It talks to the Dash4Devs SITE surface (/api/site/*) with a per-site key
- * issued from the ServiceDash dashboard (Website -> API keys):
+ * issued from the DashForServices dashboard (Website -> API keys):
  *
- *   import { SiteClient } from "servicedash-sdk";
+ *   import { SiteClient } from "dashforservices-sdk";
  *
- *   const sd = new SiteClient({ key: process.env.NEXT_PUBLIC_SERVICEDASH_SITE_KEY });
+ *   const sd = new SiteClient({ key: process.env.NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY });
  *   const { products } = await sd.products.list({ category: "softeners" });
  *
  * Unlike localplug-sdk this package is not hardwired to one platform slug:
- * ServiceDash runs several tenants, each of which may be its own Dash4Devs
+ * DashForServices runs several tenants, each of which may be its own Dash4Devs
  * platform. Pass `platform: "<slug>"` and the first call verifies the key
  * belongs to it; omit it and any valid site key is accepted.
  */
@@ -49,19 +49,19 @@ import { AttributionModule, attributionFromCookies } from "./services/attributio
 import { LEAD_KINDS, CUSTOMER_TYPES, WATER_CONCERNS, WATER_PROBLEMS, TIMELINES, BUSINESS_TYPES } from "./services/leads.js";
 import { buildQuery } from "./services/_util.js";
 
-export const SDK_NAME = "servicedash-sdk";
+export const SDK_NAME = "dashforservices-sdk";
 export const SDK_VERSION = "0.1.0-alpha";
-export const PRODUCT_NAME = "ServiceDash";
+export const PRODUCT_NAME = "DashForServices";
 export const DEFAULT_BASE_URL = "https://api.dashfordevs.com";
 
 /** Environment variable names the SDK (and its CLI) read. */
 export const ENV = Object.freeze({
   /** Secret OR public key, server-side. Never NEXT_PUBLIC_* when secret. */
-  SITE_KEY: "SERVICEDASH_SITE_KEY",
+  SITE_KEY: "DASHFORSERVICES_SITE_KEY",
   /** Public key, inlined into the browser bundle by Next.js. */
-  PUBLIC_SITE_KEY: "NEXT_PUBLIC_SERVICEDASH_SITE_KEY",
+  PUBLIC_SITE_KEY: "NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY",
   /** API host override (local dev / staging). */
-  API_URL: "SERVICEDASH_API_URL",
+  API_URL: "DASHFORSERVICES_API_URL",
 });
 
 export const KEY_PATTERN = /^dfd-site-(public|secret)-key-(live|test)-[A-Za-z0-9_-]{20,}$/;
@@ -73,10 +73,10 @@ const RATE_LIMIT_ATTEMPTS = 4;
 const DEFAULT_REVALIDATE_SECONDS = 300;
 
 /** Error thrown by every SDK call that reached the API and failed. */
-export class ServiceDashError extends Error {
+export class DashForServicesError extends Error {
   constructor(message, { status, code, payload, retryAfterMs } = {}) {
     super(message);
-    this.name = "ServiceDashError";
+    this.name = "DashForServicesError";
     this.status = status;
     this.code = code;
     this.payload = payload;
@@ -109,29 +109,29 @@ function readEnv(name) {
 // so the browser fallback cannot go through readEnv(name).
 function readPublicKeyEnv() {
   try {
-    return process.env.NEXT_PUBLIC_SERVICEDASH_SITE_KEY || undefined;
+    return process.env.NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY || process.env.NEXT_PUBLIC_SERVICEDASH_SITE_KEY || undefined;
   } catch {
     return undefined;
   }
 }
 function readPublicApiUrlEnv() {
   try {
-    return process.env.NEXT_PUBLIC_SERVICEDASH_API_URL || undefined;
+    return process.env.NEXT_PUBLIC_DASHFORSERVICES_API_URL || process.env.NEXT_PUBLIC_SERVICEDASH_API_URL || undefined;
   } catch {
     return undefined;
   }
 }
 
 function securityError(lines) {
-  return new Error(`\n\nSERVICEDASH SECURITY ERROR\n\n${lines.join("\n")}\n`);
+  return new Error(`\n\nDASHFORSERVICES SECURITY ERROR\n\n${lines.join("\n")}\n`);
 }
 
 export class SiteClient {
   /**
    * @param {Object} [options]
    * @param {string} [options.key]       dfd-site-<public|secret>-key-<live|test>-<random>.
-   *   Defaults to SERVICEDASH_SITE_KEY (server) / NEXT_PUBLIC_SERVICEDASH_SITE_KEY.
-   * @param {string} [options.baseURL]   API host. Defaults to SERVICEDASH_API_URL or https://api.dashfordevs.com
+   *   Defaults to DASHFORSERVICES_SITE_KEY (server) / NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY.
+   * @param {string} [options.baseURL]   API host. Defaults to DASHFORSERVICES_API_URL or https://api.dashfordevs.com
    * @param {string} [options.platform]  Expected Dash4Devs platform slug. Asserted against
    *   /api/site/whoami on the first call, only when given.
    * @param {number} [options.revalidate=300] Server GET cache lifetime (seconds) under a production Next build.
@@ -163,7 +163,7 @@ export class SiteClient {
       throw new Error(
         "A site key is required. Pass { key } or set " +
           `${ENV.SITE_KEY} (server) / ${ENV.PUBLIC_SITE_KEY} (browser). ` +
-          "Issue one in the ServiceDash dashboard: Website -> API keys."
+          "Issue one in the DashForServices dashboard: Website -> API keys."
       );
     }
 
@@ -183,7 +183,7 @@ export class SiteClient {
         "A SECRET site key is being used in the browser.",
         "Use it only in server code (route handlers, server components, server actions).",
         "In the browser, use a PUBLIC key with an allowed origin.",
-        "If this key was exposed, revoke it: ServiceDash dashboard -> Website -> API keys.",
+        "If this key was exposed, revoke it: DashForServices dashboard -> Website -> API keys.",
       ]);
     }
 
@@ -299,7 +299,7 @@ export class SiteClient {
       root._pairing = root._rawFetch("/api/site/whoami").then((who) => {
         const slug = who?.platform?.slug;
         if (slug && slug !== root.platform) {
-          throw new ServiceDashError(
+          throw new DashForServicesError(
             `This key belongs to the '${slug}' platform, but this client was configured ` +
               `for '${root.platform}'. Check ${ENV.SITE_KEY} and the platform option.`,
             { code: "platform_mismatch", status: 403 }
@@ -351,7 +351,7 @@ export class SiteClient {
 
     if (auth) {
       if (!this._customerToken) {
-        throw new ServiceDashError("Not signed in. Call sd.auth.login() or pass a customer token.", {
+        throw new DashForServicesError("Not signed in. Call sd.auth.login() or pass a customer token.", {
           status: 401,
           code: "not_signed_in",
         });
@@ -381,9 +381,9 @@ export class SiteClient {
       });
     } catch (err) {
       // Caller-initiated aborts stay AbortErrors; everything else (DNS, refused,
-      // TLS, offline) becomes a ServiceDashError so callers catch one type.
+      // TLS, offline) becomes a DashForServicesError so callers catch one type.
       if (err?.name === "AbortError") throw err;
-      throw new ServiceDashError(`Couldn't reach the ServiceDash API at ${this.baseURL} (${method} ${path}): ${err?.message || err}`, {
+      throw new DashForServicesError(`Couldn't reach the DashForServices API at ${this.baseURL} (${method} ${path}): ${err?.message || err}`, {
         status: 0,
         code: "network_error",
         payload: null,
@@ -403,7 +403,7 @@ export class SiteClient {
       let message = payload?.message || `Site API error (${response.status}) on ${method} ${path}`;
       const code = payload?.error;
       if (code === "origin_not_allowed") {
-        message += "\n-> Add this domain to the key's allowed origins in the ServiceDash dashboard.";
+        message += "\n-> Add this domain to the key's allowed origins in the DashForServices dashboard.";
       } else if (code === "secret_key_required") {
         message += "\n-> Public keys are read-only here. Make this call from your server with the secret key.";
       } else if (code === "key_revoked") {
@@ -418,7 +418,7 @@ export class SiteClient {
       if (Number.isFinite(retryAfter) && retryAfter > 0) {
         retryAfterMs = Math.min(retryAfter * 1000, RATE_LIMIT_WINDOW_MS * 2);
       }
-      throw new ServiceDashError(message, { status: response.status, code, payload, retryAfterMs });
+      throw new DashForServicesError(message, { status: response.status, code, payload, retryAfterMs });
     }
 
     return payload;

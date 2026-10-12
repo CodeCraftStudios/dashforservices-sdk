@@ -1,5 +1,5 @@
 /**
- * Page groups: structured content collections edited in the ServiceDash
+ * Page groups: structured content collections edited in the DashForServices
  * dashboard under Website -> Page groups. Service pages, city pages, cost
  * calculator pages, water-quality reports per city, FAQs, team.
  *

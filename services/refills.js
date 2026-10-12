@@ -13,7 +13,7 @@
  * Needs a signed-in customer.
  *
  * Backend: NEW. /api/site/refills[/<id>/reorder|/<id>/dismiss]
- * (ServiceDash "subscriptions" module; due dates come from the product's
+ * (DashForServices "subscriptions" module; due dates come from the product's
  * refill_schedule and the customer's orders and installs).
  */
 

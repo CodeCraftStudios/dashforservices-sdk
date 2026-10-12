@@ -1,22 +1,22 @@
 /**
- * servicedash-sdk: the ServiceDash public-site SDK.
+ * dashforservices-sdk: the DashForServices public-site SDK.
  * Runs on per-site dfd-site-* keys against the Dash4Devs /api/site/* surface.
  */
 
-export declare const SDK_NAME: "servicedash-sdk";
+export declare const SDK_NAME: "dashforservices-sdk";
 export declare const SDK_VERSION: string;
-export declare const PRODUCT_NAME: "ServiceDash";
+export declare const PRODUCT_NAME: "DashForServices";
 export declare const DEFAULT_BASE_URL: "https://api.dashfordevs.com";
 export declare const ENV: {
-  readonly SITE_KEY: "SERVICEDASH_SITE_KEY";
-  readonly PUBLIC_SITE_KEY: "NEXT_PUBLIC_SERVICEDASH_SITE_KEY";
-  readonly API_URL: "SERVICEDASH_API_URL";
+  readonly SITE_KEY: "DASHFORSERVICES_SITE_KEY";
+  readonly PUBLIC_SITE_KEY: "NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY";
+  readonly API_URL: "DASHFORSERVICES_API_URL";
 };
 export declare const KEY_PATTERN: RegExp;
 
 export declare function parseSiteKey(key: string): { kind: "public" | "secret"; environment: "live" | "test" } | null;
 
-export declare class ServiceDashError extends Error {
+export declare class DashForServicesError extends Error {
   status?: number;
   /** Platform error code, e.g. origin_not_allowed, module_not_enabled, not_signed_in, platform_mismatch. */
   code?: string;
@@ -33,7 +33,7 @@ export interface KeyValueStorage {
 export interface SiteClientOptions {
   /** dfd-site-<public|secret>-key-<live|test>-<random>. Defaults to the SERVICEDASH env vars. */
   key?: string;
-  /** API host. Defaults to SERVICEDASH_API_URL or https://api.dashfordevs.com. */
+  /** API host. Defaults to DASHFORSERVICES_API_URL or https://api.dashfordevs.com. */
   baseURL?: string;
   /** Expected Dash4Devs platform slug; asserted via /api/site/whoami on first call when given. */
   platform?: string;

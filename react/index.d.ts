@@ -3,7 +3,7 @@ import type { SiteClient, SiteClientOptions, CartState, CartLine, CartAddInput, 
 
 export { SiteClient };
 
-export interface ServiceDashProviderProps {
+export interface DashForServicesProviderProps {
   /** A client you built (preferred). */
   client?: SiteClient | null;
   /** Or options to build one. */
@@ -12,10 +12,10 @@ export interface ServiceDashProviderProps {
   captureAttribution?: boolean;
   children?: ReactNode;
 }
-export declare function ServiceDashProvider(props: ServiceDashProviderProps): ReactElement;
+export declare function DashForServicesProvider(props: DashForServicesProviderProps): ReactElement;
 
 /** The SiteClient from the nearest provider. Throws outside one. */
-export declare function useServiceDash(): SiteClient;
+export declare function useDashForServices(): SiteClient;
 
 export interface UseCartResult {
   state: CartState;

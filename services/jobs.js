@@ -20,7 +20,7 @@
  * Needs a signed-in customer (see customers.js).
  *
  * Backend: NEW. /api/site/jobs[/<id>[/sign-off|/reschedule-request]]
- * (ServiceDash "jobs" module).
+ * (DashForServices "jobs" module).
  */
 
 import { seg } from "./_util.js";

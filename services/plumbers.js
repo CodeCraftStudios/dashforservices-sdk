@@ -17,7 +17,7 @@
  *     rating: { average, count }, years_in_business, featured, badges[] }
  *
  * Backend: NEW. /api/site/plumbers[/<slug>], /api/site/plumbers/install-requests
- * (ServiceDash "plumbers" module; install requests feed "dispatch").
+ * (DashForServices "plumbers" module; install requests feed "dispatch").
  */
 
 import { seg } from "./_util.js";

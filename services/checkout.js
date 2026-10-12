@@ -26,7 +26,7 @@
  * in `subscription` mode (or a mixed session with `setup_future_usage`) and
  * schedule the refills; the SDK does nothing different.
  *
- * Backend: NEW (ServiceDash "checkout" module, needs a Django app for Stripe
+ * Backend: NEW (DashForServices "checkout" module, needs a Django app for Stripe
  * webhooks and stock reservations; see docs/backend-modules.md).
  */
 

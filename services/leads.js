@@ -21,7 +21,7 @@
  *
  * Backend: the endpoint EXISTS (POST /api/site/leads, module "contacts",
  * writes a `contact` record). Routing it into an `install_lead` with the call
- * timer and sequences is NEW (ServiceDash "install_crm" module).
+ * timer and sequences is NEW (DashForServices "install_crm" module).
  */
 
 /**

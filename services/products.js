@@ -16,7 +16,7 @@
  *
  * Backend: list/get/categories EXIST today (/api/site/products, /api/site/categories,
  * module "inventory"). `search`, `sizes[]` and `subscription_plans` on the
- * payload are NEW (ServiceDash "subscriptions" + "inventory" extensions).
+ * payload are NEW (DashForServices "subscriptions" + "inventory" extensions).
  */
 
 import { seg, orNull } from "./_util.js";

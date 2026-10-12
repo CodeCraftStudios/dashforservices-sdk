@@ -24,7 +24,7 @@
  * concern (see react/useCart).
  *
  * Backend: NEW. POST /api/site/carts (upsert), GET /api/site/carts/<id>
- * (ServiceDash "carts" module).
+ * (DashForServices "carts" module).
  */
 
 import { createStorage, readJSON, writeJSON, seg, hasWindow } from "./_util.js";

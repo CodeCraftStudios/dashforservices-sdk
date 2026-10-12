@@ -2,7 +2,7 @@
  * Blog: published posts and categories.
  *
  * Backend: EXISTS for /api/site/blog/posts[/<slug>]. Categories and related are not built yet.
- * (ServiceDash "blog" module).
+ * (DashForServices "blog" module).
  */
 
 import { seg, orNull } from "./_util.js";

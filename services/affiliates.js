@@ -13,7 +13,7 @@
  * the platform credits the sale after the return window.
  *
  * Backend: NEW. POST /api/site/affiliates/clicks, GET /api/site/affiliates/<code>
- * (ServiceDash "affiliates" module).
+ * (DashForServices "affiliates" module).
  */
 
 import { seg, setCookie, hasWindow } from "./_util.js";
