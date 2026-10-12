@@ -1,7 +1,7 @@
 {
   "name": "servicedash-sdk",
   "version": "0.1.0-alpha",
-  "description": "ServiceDash public-site SDK: connects a tenant's website (landing page + store) to the ServiceDash platform on Dash4Devs. Private; not for public distribution.",
+  "description": "ServiceDash public-site SDK: connects a tenant's website (landing page + store) to the ServiceDash platform on Dash4Devs. Install with npm install github:CodeCraftStudios/servicedash-sdk.",
   "private": true,
   "type": "module",
   "main": "./index.js",
