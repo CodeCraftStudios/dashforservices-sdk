@@ -19,8 +19,8 @@
  *
  * Needs a signed-in customer (see customers.js).
  *
- * Backend: NEW. /api/site/jobs[/<id>[/sign-off|/reschedule-request]]
- * (DashForServices "jobs" module).
+ * Backend: EXISTS. /api/site/jobs[/<id>[/sign-off|/reschedule-request|/problem]]
+ * on the dashboard's job records.
  */
 
 import { seg } from "./_util.js";

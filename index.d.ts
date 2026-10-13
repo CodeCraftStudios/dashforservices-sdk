@@ -448,9 +448,14 @@ export interface Customer {
   id: string;
   email: string;
   name?: string;
+  first_name?: string;
+  last_name?: string;
   phone?: string;
   default_address?: Address | null;
   sms_consent?: boolean;
+  /** False for accounts made by a sign-in link or a checkout that never set one. */
+  has_password?: boolean;
+  created_at?: string;
   [key: string]: unknown;
 }
 
@@ -489,7 +494,8 @@ export declare class CustomersModule {
   register(input: { email: string; password: string; name?: string; phone?: string }, options?: { persist?: boolean }): Promise<{ token: string; customer: Customer }>;
   requestLoginLink(email: string, options?: { redirectUrl?: string }): Promise<{ ok: true }>;
   verifyLoginLink(token: string, options?: { persist?: boolean }): Promise<{ token: string; customer: Customer }>;
-  requestPasswordReset(email: string): Promise<{ ok: true }>;
+  requestPasswordReset(email: string, options?: { redirectUrl?: string }): Promise<{ ok: true }>;
+  confirmPasswordReset(token: string, password: string, options?: { persist?: boolean }): Promise<{ token: string; customer: Customer }>;
   me(): Promise<{ customer: Customer }>;
   updateMe(patch: Partial<Customer>): Promise<{ customer: Customer }>;
   logout(): Promise<{ ok: true }>;
@@ -548,8 +554,11 @@ export interface Job {
   shipment?: Shipment | null;
   install?: { date: string | null; window_start?: string | null; window_end?: string | null };
   plumber?: { company: string; first_name?: string; license_number?: string; license_state?: string; phone?: string; rating?: number } | null;
+  /** What ships for the install, when dispatched from a lead. */
+  items?: Array<{ name: string; quantity: number }>;
   photos?: Array<{ url: string; kind?: string }>;
   sign_off?: { required: boolean; signed_at?: string | null };
+  created_at?: string;
 }
 
 export declare class JobsModule {

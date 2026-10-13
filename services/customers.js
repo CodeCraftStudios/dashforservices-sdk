@@ -8,9 +8,9 @@
  *    (POST /api/site/customers, module "customers").
  *
  *  - Portal sign-in: a customer JWT for the account area (orders, installs,
- *    refills, subscriptions). NEW: /api/site/auth/* (the platform has
- *    /api/platform/portal/login on platform keys; the site surface needs its
- *    own, scoped to the site's platform). Also available as `sd.auth`.
+ *    refills, subscriptions). EXISTS: /api/site/auth/* (register, login,
+ *    magic-link, password-reset, me, logout), scoped to the site's platform and
+ *    org. Also available as `sd.auth`.
  *
  * Token storage: in memory on the client instance by default. In the browser
  * pass `{ persist: true }` to login() to keep it in localStorage, or (better)
@@ -99,9 +99,21 @@ export class CustomersModule {
     return res;
   }
 
-  /** Start a password reset (always answers ok; no account-enumeration oracle). */
-  async requestPasswordReset(email) {
-    return this.client._fetch("/api/site/auth/password-reset", { method: "POST", body: { email } });
+  /**
+   * Start a password reset (always answers ok; no account-enumeration oracle).
+   * The email links to `redirectUrl` (your /auth/reset page) with ?token=; by
+   * default the site's own /auth/reset.
+   */
+  async requestPasswordReset(email, { redirectUrl } = {}) {
+    return this.client._fetch("/api/site/auth/password-reset", { method: "POST", body: { email, redirect_url: redirectUrl } });
+  }
+
+  /** Finish a password reset with the token from the email; signs the customer in. */
+  async confirmPasswordReset(token, password, { persist = false } = {}) {
+    if (!token || !password) throw new Error("auth.confirmPasswordReset: token and password are required");
+    const res = await this.client._fetch("/api/site/auth/password-reset/confirm", { method: "POST", body: { token, password } });
+    if (res?.token) this.setToken(res.token, { persist });
+    return res;
   }
 
   /** @returns {Promise<{customer: object}>} */
