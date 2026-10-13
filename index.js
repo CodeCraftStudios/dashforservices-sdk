@@ -42,7 +42,7 @@ import { FormsModule } from "./services/forms.js";
 import { JobsModule, JOB_STEPS, CUSTOMER_JOB_STEPS } from "./services/jobs.js";
 import { RefillsModule } from "./services/refills.js";
 import { QuotesModule, QUOTE_TIERS } from "./services/quotes.js";
-import { HardnessModule, HARDNESS_BANDS } from "./services/hardness.js";
+import { WaterModule, WATER_FILTERS } from "./services/water.js";
 import { OrgModule } from "./services/org.js";
 import { AffiliatesModule } from "./services/affiliates.js";
 import { AttributionModule, attributionFromCookies } from "./services/attribution.js";
@@ -241,7 +241,7 @@ export class SiteClient {
     this.legal = new LegalModule(this);
     this.forms = new FormsModule(this);
     this.quotes = new QuotesModule(this);
-    this.hardness = new HardnessModule(this);
+    this.water = new WaterModule(this);
     this.org = new OrgModule(this);
     this.affiliates = new AffiliatesModule(this);
     this.jobs = new JobsModule(this);
@@ -446,7 +446,7 @@ export {
   JOB_STEPS,
   CUSTOMER_JOB_STEPS,
   QUOTE_TIERS,
-  HARDNESS_BANDS,
+  WATER_FILTERS,
   LEAD_KINDS,
   CUSTOMER_TYPES,
   WATER_CONCERNS,

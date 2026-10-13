@@ -579,7 +579,7 @@ export declare class RefillsModule {
   addToCart(refill: Refill, planId?: string | null, quantity?: number): CartLine;
 }
 
-// ─── Quotes / hardness / regulations ──────────────────────────────────────
+// ─── Quotes / tap water / regulations ──────────────────────────────────────
 
 export type QuoteTier = "good" | "better" | "best" | "ultimate";
 export declare const QUOTE_TIERS: readonly QuoteTier[];
@@ -622,26 +622,83 @@ export declare class QuotesModule {
   checkout(token: string, input: QuoteCheckoutInput): Promise<{ url: string; session_id: string }>;
 }
 
-export type HardnessBand = "soft" | "slightly_hard" | "moderately_hard" | "hard" | "very_hard";
-export declare const HARDNESS_BANDS: ReadonlyArray<{ band: HardnessBand; label: string; maxGpg: number }>;
+/** A measured level, limit or guideline as EWG states it: "7.53 ppb". */
+export interface WaterMeasure {
+  value: number | null;
+  unit: string;
+  text: string;
+}
 
-export interface Hardness {
-  zip?: string;
+export type WaterFilterKey = "carbon" | "ro" | "ion" | "distillation";
+export declare const WATER_FILTERS: Readonly<Record<WaterFilterKey, string>>;
+
+export interface WaterContaminant {
+  /** EWG contaminant code. */
+  code: string;
+  name: string;
+  /** "cancer", "harm to the thyroid"; empty when EWG lists none. */
+  effect: string;
+  level: WaterMeasure | null;
+  /** Null when there is no legal limit. */
+  legal_limit: WaterMeasure | null;
+  guideline: WaterMeasure | null;
+  /** How many times over EWG's health guideline; null for contaminants under it. */
+  times: number | null;
+  exceeds: boolean;
+  national_avg: string;
+  state_avg: string;
+  description: string;
+  /** "Treatment Byproducts", "Agriculture", "Naturally Occurring", ... */
+  sources: string[];
+  /** Filter technologies EWG lists as effective for it. */
+  filters: WaterFilterKey[];
+}
+
+export interface WaterUtility {
+  /** EPA public water system id, like FL4061408. */
+  pws: string;
+  name: string;
+  /** "Sunrise, FL" */
+  location: string;
   city: string;
   state: string;
-  county?: string;
-  gpg: number;
-  ppm: number;
-  band: HardnessBand;
-  water_source?: "city" | "well" | "mixed";
-  source?: string;
-  source_url?: string;
-  notes?: string;
-  updated_at?: string;
-  /** "zip": this zip's own data. "nearby": a known zip on the same supply stands in (area data matched). */
-  match?: "zip" | "nearby";
-  /** The zip whose data a nearby match used. */
-  nearby_zip?: string;
+  people_served: number | null;
+  /** The utility EWG lists first for the ZIP. */
+  featured: boolean;
+}
+
+export interface WaterReport {
+  pws: string;
+  name: string;
+  city: string;
+  state: string;
+  people_served: number | null;
+  /** Testing years the report covers, like "2021-2023". */
+  period: string;
+  compliance: { compliant: boolean; quarter: string; text: string };
+  exceed_count: number;
+  other_count: number;
+  not_detected_count: number;
+  contaminants: WaterContaminant[];
+  not_detected: string[];
+  filters: { carbon: { exceed: number; other: number }; ro: { exceed: number; other: number } };
+  /** EWG's page for the utility; credit it. */
+  source_url: string;
+  fetched_at: string;
+}
+
+export interface WaterLookup {
+  zip: string;
+  city: string;
+  state: string;
+  county: string;
+  county_fips: string;
+  /** found: a utility serves the ZIP. area: none of its own (wells, mostly), its county's utilities are listed. none: not a ZIP EWG knows. */
+  status: "found" | "area" | "none";
+  utilities: WaterUtility[];
+  /** The featured utility's report, when asked for and status is found. */
+  report: WaterReport | null;
+  fetched_at: string;
 }
 
 export interface SiteOrg {
@@ -668,13 +725,12 @@ export declare class OrgModule {
   get(): Promise<{ org: SiteOrg }>;
 }
 
-export declare class HardnessModule {
-  byZip(zip: string): Promise<{ hardness: Hardness | null }>;
-  byCity(city: string, state: string): Promise<{ hardness: (Hardness & { gpg_avg: number; gpg_min: number; gpg_max: number; zips: string[] }) | null }>;
-  cities(options?: { state?: string }): Promise<{ cities: Array<{ city: string; state: string; slug: string; gpg_avg: number }> }>;
-  band(gpg: number): { band: HardnessBand; label: string; maxGpg: number } | null;
-  ppmToGpg(ppm: number): number;
-  gpgToPpm(gpg: number): number;
+export declare class WaterModule {
+  byZip(zip: string, options?: { report?: boolean }): Promise<WaterLookup>;
+  system(pws: string): Promise<{ report: WaterReport }>;
+  exceeding(report: WaterReport | null | undefined): WaterContaminant[];
+  other(report: WaterReport | null | undefined): WaterContaminant[];
+  filtersFor(report: WaterReport | null | undefined): Array<{ key: WaterFilterKey; label: string; count: number }>;
 }
 
 export interface Regulation {
@@ -1024,7 +1080,7 @@ export declare class SiteClient {
   legal: LegalModule;
   forms: FormsModule;
   quotes: QuotesModule;
-  hardness: HardnessModule;
+  water: WaterModule;
   org: OrgModule;
   affiliates: AffiliatesModule;
   attribution: AttributionModule;

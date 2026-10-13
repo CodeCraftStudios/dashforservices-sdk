@@ -3,7 +3,7 @@
 The **DashForServices public-site SDK**: what a DashForServices tenant's website runs on.
 That covers the landing page, blog, service and city pages, page groups, the store
 (products, cart, Stripe checkout, filter subscriptions), install quotes and quote
-checkout, reviews, the plumber directory, water hardness and local regulations,
+checkout, reviews, the plumber directory, tap water quality and local regulations,
 lead and quote forms with attribution and SMS consent, affiliates, first-party
 click tracking, legal pages and the customer portal (orders, installs, refills,
 subscriptions).
@@ -163,12 +163,12 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   const { city } = await params;
   const { item } = await sd.pageGroup("cities").get(city);
   const zip = String(item.custom_fields?.zip ?? "");
-  const [{ hardness }, { regulation }, { plumbers }] = await Promise.all([
-    sd.hardness.byZip(zip),
+  const [water, { regulation }, { plumbers }] = await Promise.all([
+    sd.water.byZip(zip),
     sd.regulations.lookup({ zip }),
     sd.plumbers.search({ zip, limit: 6 }),
   ]);
-  return <CityView item={item} hardness={hardness} regulation={regulation} plumbers={plumbers} />;
+  return <CityView item={item} water={water} regulation={regulation} plumbers={plumbers} />;
 }
 ```
 
@@ -330,7 +330,7 @@ the token in localStorage instead.
 | `reviews` | `list({product or plumber, sort, rating, withPhotos})`, `summary()`, `submit({product or plumber, rating, body, name, ...})`, `markHelpful(id)` | Moderated; verified when tied to an order or job. P |
 | `plumbers` | `search({zip} or {state,county,city})`, `get(slug)`, `areas({state})`, `coverage(zip)`, `requestInstall({..., smsConsent})` | Public directory profile only. P |
 | `regulations` | `lookup({zip} or {city,state})`, `state(code)`, helper `requirement(reg, key)` | Most specific jurisdiction wins. P |
-| `hardness` | `byZip(zip)`, `byCity(city, state)`, `cities({state})`; helpers `band(gpg)`, `ppmToGpg`, `gpgToPpm` | Feeds the cost calculator and city pages. P |
+| `water` | `byZip(zip, {report})`, `system(pws)`; helpers `exceeding(report)`, `other(report)`, `filtersFor(report)`; constant `WATER_FILTERS` | EWG Tap Water Database by ZIP: the utilities serving it and the featured utility's contaminant report. Credit EWG (`report.source_url`). P |
 | `leads` | `submit(data, {kind, smsConsent, consentTextVersion, consentText, emailConsent, honeypot})`, `requestQuote`, `requestWaterTest`, `requestCallback`, `contact`; constants `LEAD_KINDS`, `WATER_CONCERNS`, ... | `smsConsent` must be an explicit boolean; `consentTextVersion` is required when it is true. Homeowner fields (ownsHome, waterSource, householdSize, concerns, problems, timeline) or commercial fields (company, businessType, locations, unitsOrRooms, dailyUsageGallons). P |
 | `attribution` | `capture()`, `get()`, `snapshot()`, `affiliateCode`, `clear()`; `attributionFromCookies(header)` | First-party: localStorage + cookies `sd_attr` and `sd_ref` |
 | `affiliates` | `track(code)`, `recordClick(code)`, `get(code)` | `?ref=CODE` is tracked automatically on landing. P |
@@ -457,7 +457,7 @@ last column).
 | `reviews.*` | `GET /api/site/reviews`, `/reviews/summary`; `POST /api/site/reviews`, `/reviews/<id>/helpful` | NEW | `reviews` |
 | `plumbers.*` | `GET /api/site/plumbers`, `/plumbers/areas`, `/plumbers/coverage`, `/plumbers/<slug>`; `POST /plumbers/install-requests` | NEW | `plumbers`, `dispatch` |
 | `regulations.*` | `GET /api/site/regulations`, `/regulations/<state>` | NEW | `regulations` |
-| `hardness.*` | `GET /api/site/hardness`, `/hardness/cities` | NEW | `regulations` |
+| `water.*` | `GET /api/site/water?zip=`, `?pws=` | EXISTS | `records` + the org's `tap_water` table |
 | `affiliates.*`, auto `?ref=` | `POST /api/site/affiliates/clicks`, `GET /api/site/affiliates/<code>` | NEW | `affiliates` |
 
 ## Errors
