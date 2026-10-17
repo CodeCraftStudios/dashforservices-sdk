@@ -50,7 +50,7 @@ import { LEAD_KINDS, CUSTOMER_TYPES, WATER_CONCERNS, WATER_PROBLEMS, TIMELINES, 
 import { buildQuery } from "./services/_util.js";
 
 export const SDK_NAME = "dashforservices-sdk";
-export const SDK_VERSION = "0.1.0-alpha";
+export const SDK_VERSION = "0.2.0-alpha";
 export const PRODUCT_NAME = "DashForServices";
 export const DEFAULT_BASE_URL = "https://api.dashfordevs.com";
 

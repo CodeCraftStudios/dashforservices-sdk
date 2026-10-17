@@ -1,6 +1,6 @@
 {
   "name": "dashforservices-sdk",
-  "version": "0.1.0-alpha",
+  "version": "0.2.0-alpha",
   "description": "DashForServices public-site SDK: connects a tenant's website (landing page + store) to the DashForServices platform on Dash4Devs. Install with npm install github:CodeCraftStudios/dashforservices-sdk.",
   "private": true,
   "type": "module",
@@ -8,6 +8,7 @@
   "module": "./index.js",
   "types": "./index.d.ts",
   "bin": {
+    "dashforservices": "./cli/bin.js",
     "servicedash": "./cli/bin.js"
   },
   "exports": {
@@ -26,13 +27,26 @@
       "import": "./react/index.jsx",
       "default": "./react/index.jsx"
     },
+    "./react/DashImage": {
+      "types": "./react/DashImage.d.ts",
+      "import": "./react/DashImage.jsx",
+      "default": "./react/DashImage.jsx"
+    },
+    "./react/manifest.generated.js": {
+      "import": "./react/manifest.generated.js",
+      "default": "./react/manifest.generated.js"
+    },
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "react": ">=18"
+    "react": ">=18",
+    "sharp": ">=0.33"
   },
   "peerDependenciesMeta": {
     "react": {
+      "optional": true
+    },
+    "sharp": {
       "optional": true
     }
   },

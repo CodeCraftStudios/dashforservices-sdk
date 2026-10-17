@@ -467,3 +467,32 @@ Every failed call, including network failures (`status: 0`, `code: "network_erro
 `origin_not_allowed` (add the domain to the key), `secret_key_required` (make the
 call server-side), `key_revoked`, `module_not_enabled` (see the table above),
 `not_signed_in` (portal call with no customer token), `platform_mismatch`.
+
+## Build and images
+
+### `npx dashforservices build`
+
+The production build. Use it as the site's `build` script (`"build": "dashforservices build"`, keep `"build:next": "next build"`).
+
+1. Asks the platform for the site's stable CDN prefix **before** building, and bakes it into the build as `NEXT_PUBLIC_ASSET_PREFIX` (a runtime-only prefix makes React silently never hydrate).
+2. Cuts a 320/640/1024/1920 WebP ladder and a blur-up for every raster image in `public/` (needs `sharp`).
+3. Runs `next build`, uploads only the changed files from `.next/static` and `public/` to the edge, and activates the deploy atomically.
+
+Needs the site's **secret** key (`DASHFORSERVICES_SITE_KEY=dfd-site-secret-...`). With no key, or the API down, it falls back to a plain `next build` served from the origin, so a deploy never goes red. Flags: `--skip-build`, `--dry-run`, `--no-activate`, `--no-images`. `npx dashforservices images` runs only the image step (no key); `npx dashforservices cdn` shows the active deploy.
+
+Site setup:
+
+- `next.config`: `assetPrefix: process.env.NEXT_PUBLIC_ASSET_PREFIX || undefined` and `transpilePackages: ["dashforservices-sdk"]`.
+- Load webfonts from Google's CDN with `<link>`, never `next/font`: the CDN sends no CORS header, so self-hosted fonts get blocked.
+- Gitignore `.env.production` (the CLI writes the prefix there) and `/public/_gen/`.
+
+### `<DashImage>`
+
+```jsx
+import { DashImage } from "dashforservices-sdk/react/DashImage";
+
+<DashImage image={file} alt="Water softener" sizes="(min-width: 1024px) 50vw, 100vw" />
+<DashImage src="/images/hero.webp" alt="" />
+```
+
+`image` is any media library file (`{ url, lqip, variants_ready, variants }`): it renders the WebP srcset with a blur-up while loading. A bare `src` to a committed `public/` file picks up the cuts from the manifest the build writes. Always import from the `/react/DashImage` subpath.
