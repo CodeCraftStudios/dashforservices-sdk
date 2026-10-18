@@ -59,3 +59,14 @@ export interface PageViewProps {
   options?: InsightsInitOptions;
 }
 export declare function PageView(props: PageViewProps): null;
+
+export interface AnalyticsProps {
+  /** Public site key. Defaults to process.env.NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY. */
+  siteKey?: string;
+  /** Reuse a client you built; null turns analytics off. */
+  client?: SiteClient | null;
+  /** Passed to insights.init(). */
+  options?: InsightsInitOptions;
+}
+/** Pageviews, sessions, attribution and [data-track] clicks in one tag. No provider needed. */
+export declare function Analytics(props: AnalyticsProps): null;

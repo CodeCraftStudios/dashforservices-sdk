@@ -8,7 +8,11 @@
  *   // next.config.ts
  *   export default { transpilePackages: ["dashforservices-sdk"] };
  *
- *   // app/providers.tsx
+ *   // Analytics only: one tag in the root layout, no provider.
+ *   import { Analytics } from "dashforservices-sdk/react";
+ *   <body>{children}<Analytics /></body>
+ *
+ *   // app/providers.tsx (carts, TrackClick, hooks)
  *   "use client";
  *   import { DashForServicesProvider, PageView } from "dashforservices-sdk/react";
  *   import { sd } from "@/lib/dashforservices";
@@ -223,6 +227,48 @@ export function PageView({ path, options }) {
     client.insights.notifyRouteChange(path);
   }, [client, controlled, path]);
 
+  return null;
+}
+
+/**
+ * Site analytics in one tag: pageviews, sessions, attribution (utm, click ids,
+ * ?ref=) and clicks on [data-track] elements, reported to the site's
+ * DashForServices dashboard (Analytics). Mount it once in the root layout:
+ *
+ *   import { Analytics } from "dashforservices-sdk/react";
+ *   <body>{children}<Analytics /></body>
+ *
+ * No provider needed. The key defaults to NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY
+ * (add the package to transpilePackages so Next inlines it); pass `siteKey`
+ * to override, or `client` to reuse one you built. With no key it does nothing.
+ *
+ * @param {{siteKey?: string, client?: SiteClient|null, options?: object}} props  options go to insights.init()
+ */
+export function Analytics({ siteKey, client, options }) {
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    let sd = client;
+    if (sd === undefined) {
+      // Written literally so Next inlines it into the client bundle.
+      const key = siteKey || process.env.NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY;
+      if (!key) return;
+      try {
+        sd = new SiteClient({ key });
+      } catch (err) {
+        console.warn(`[dashforservices-sdk] Analytics off: ${err?.message || err}`);
+        return;
+      }
+    }
+    if (!sd) return;
+    try {
+      sd.attribution.capture();
+      sd.insights.init(options || {});
+    } catch {
+      /* never break the page */
+    }
+  }, [siteKey, client, options]);
   return null;
 }
 

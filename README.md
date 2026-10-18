@@ -172,7 +172,26 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
 }
 ```
 
-### 3. Providers: attribution, pageviews, cart
+### 3. Analytics: one tag
+
+```tsx
+// app/layout.tsx
+import { Analytics } from "dashforservices-sdk/react";
+
+<body>
+  {children}
+  <Analytics />
+</body>
+```
+
+That's all a site needs for the dashboard's Analytics page: pageviews (App
+Router navigations included), sessions, attribution (utm, gclid/fbclid, `?ref=`)
+and clicks on `data-track="<name>"` elements. It reads
+`NEXT_PUBLIC_DASHFORSERVICES_SITE_KEY` (or `siteKey`), needs no provider, and
+does nothing without a key. The site's live URL must be an allowed origin on
+the public key.
+
+### 3b. Providers: carts, TrackClick and hooks
 
 ```tsx
 // app/providers.tsx
@@ -369,6 +388,7 @@ Bots are classified from the user agent and kept out of reports; the client IP i
 | `useDashForServices()` | The client |
 | `useCart({autoSync})` | Live cart: `lines`, `count`, `subtotal`, `totals`, `add`, `update`, `setPlan`, `remove`, `clear`, `sync`, `syncing`, `error`. Persists to localStorage, follows other tabs, renders empty on the server so hydration matches |
 | `<TrackClick event label href props>` | Records a click on its single child (no wrapper element), then runs the child's own `onClick` |
+| `<Analytics siteKey? client? options?/>` | Analytics in one tag, no provider: pageviews, sessions, attribution, tagged clicks |
 | `<PageView path? options?/>` | Starts insights; automatic pageviews or controlled by `path` |
 
 ### Checkout transports
